@@ -34,8 +34,8 @@ export function verifyApiKey(req: Request, res: Response, next: NextFunction): v
     return;
   }
 
-  // Verify key format (sk_xxxxx)
-  if (!key.startsWith('sk_')) {
+  // Verify key format (ar_xxxxx)
+  if (!key.startsWith('ar_')) {
     res.status(401).json({ error: 'Invalid API key format' });
     return;
   }

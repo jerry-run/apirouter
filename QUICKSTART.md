@@ -90,13 +90,13 @@ Navigate to `http://localhost:3000` in your browser.
 
 3. **Copy Your Key**
    - Your new key appears in the list
-   - Click "Copy" to copy `sk_xxxxx`
+   - Click "Copy" to copy `ar_xxxxx`
    - **Keep this safe!** (Show once, never logged)
 
 4. **Use the Key**
    ```bash
    curl -X POST http://localhost:3001/api/proxy/brave/search \
-     -H "Authorization: Bearer sk_xxxxx" \
+     -H "Authorization: Bearer ar_xxxxx" \
      -H "Content-Type: application/json" \
      -d '{"q": "hello world"}'
    ```
@@ -135,7 +135,7 @@ Navigate to `http://localhost:3000` in your browser.
    
    # Use the key to search
    curl -X POST http://localhost:3001/api/proxy/brave/search \
-     -H "Authorization: Bearer sk_xxxxx" \
+     -H "Authorization: Bearer ar_xxxxx" \
      -H "Content-Type: application/json" \
      -d '{"q": "javascript"}'
    ```
@@ -281,7 +281,7 @@ curl -X POST http://localhost:3001/api/keys \
 {
   "id": "uuid",
   "name": "My Dev Key",
-  "key": "sk_xxxxx",
+  "key": "ar_xxxxx",
   "providers": ["brave"],
   "createdAt": "2026-01-31T...",
   "isActive": true
@@ -298,7 +298,7 @@ curl http://localhost:3001/api/keys
 
 ```bash
 curl -X POST http://localhost:3001/api/proxy/brave/search \
-  -H "Authorization: Bearer sk_xxxxx" \
+  -H "Authorization: Bearer ar_xxxxx" \
   -H "Content-Type: application/json" \
   -d '{
     "q": "javascript tutorials",
@@ -360,7 +360,7 @@ Ctrl+Shift+R (or Cmd+Shift+R on Mac)
 
 ### API key not working
 
-1. Check the key format (should start with `sk_`)
+1. Check the key format (should start with `ar_`)
 2. Verify the key is active (not deleted)
 3. Check the key has the required provider permission
 4. Try without authentication (mock mode)

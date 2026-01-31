@@ -61,7 +61,7 @@ describe('Authentication Middleware', () => {
       // This will proceed to next middleware/route handler
       const response = await request(app)
         .get('/protected')
-        .set('Authorization', 'Bearer sk_1234567890abcdef')
+        .set('Authorization', 'Bearer ar_1234567890abcdef')
         .expect(200);
 
       expect(response.body.message).toBe('authorized');
@@ -141,7 +141,7 @@ describe('Authentication Middleware', () => {
       // This test documents current behavior
       const response = await request(app)
         .get('/test')
-        .set('Authorization', 'bearer sk_test123')
+        .set('Authorization', 'bearer ar_test123')
         .expect(401);
 
       expect(response.body).toHaveProperty('error');
@@ -154,7 +154,7 @@ describe('Authentication Middleware', () => {
 
       const response = await request(app)
         .get('/test')
-        .set('Authorization', '  Bearer  sk_test123  ')
+        .set('Authorization', '  Bearer  ar_test123  ')
         .expect(401);
 
       // Current implementation may fail due to split behavior

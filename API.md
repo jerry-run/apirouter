@@ -13,7 +13,7 @@ http://localhost:3001/api
 All endpoints (except `/health`) support optional Bearer token authentication:
 
 ```
-Authorization: Bearer sk_xxxxxxxxxxxxx
+Authorization: Bearer ar_xxxxxxxxxxxxx
 ```
 
 ## Response Format
@@ -71,7 +71,7 @@ Content-Type: application/json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
   "name": "My First Key",
-  "key": "sk_abcdef123456",
+  "key": "ar_abcdef123456",
   "providers": ["brave", "openai"],
   "createdAt": "2026-01-31T10:30:00Z",
   "isActive": true
@@ -98,7 +98,7 @@ GET /api/keys
   {
     "id": "550e8400-e29b-41d4-a716-446655440000",
     "name": "My First Key",
-    "key": "sk_abcdef123456",
+    "key": "ar_abcdef123456",
     "providers": ["brave"],
     "createdAt": "2026-01-31T10:30:00Z",
     "isActive": true
@@ -106,7 +106,7 @@ GET /api/keys
   {
     "id": "550e8400-e29b-41d4-a716-446655440001",
     "name": "My Second Key",
-    "key": "sk_ghijkl789012",
+    "key": "ar_ghijkl789012",
     "providers": ["openai"],
     "createdAt": "2026-01-31T10:30:00Z",
     "isActive": true
@@ -129,7 +129,7 @@ GET /api/keys/{keyId}
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
   "name": "My First Key",
-  "key": "sk_abcdef123456",
+  "key": "ar_abcdef123456",
   "providers": ["brave"],
   "createdAt": "2026-01-31T10:30:00Z",
   "isActive": true
@@ -175,7 +175,7 @@ GET /api/config/providers
   {
     "name": "brave",
     "isConfigured": true,
-    "apiKey": "sk_brave_key",
+    "apiKey": "ar_brave_key",
     "lastChecked": "2026-01-31T10:30:00Z"
   },
   {
@@ -208,7 +208,7 @@ GET /api/config/providers/{name}
 {
   "name": "brave",
   "isConfigured": true,
-  "apiKey": "sk_brave_key",
+  "apiKey": "ar_brave_key",
   "lastChecked": "2026-01-31T10:30:00Z"
 }
 ```
@@ -297,7 +297,7 @@ Search using Brave Search API via POST request.
 
 ```
 POST /api/proxy/brave/search
-Authorization: Bearer sk_xxxxx
+Authorization: Bearer ar_xxxxx
 Content-Type: application/json
 
 {
@@ -343,7 +343,7 @@ Search using Brave Search API via GET request.
 
 ```
 GET /api/proxy/brave/search?q=javascript&count=10&offset=0&safesearch=moderate
-Authorization: Bearer sk_xxxxx
+Authorization: Bearer ar_xxxxx
 ```
 
 **Query Parameters:**
@@ -425,7 +425,7 @@ curl -X POST http://localhost:3001/api/config/providers/brave \
 
 ```bash
 curl -X POST http://localhost:3001/api/proxy/brave/search \
-  -H "Authorization: Bearer sk_xxxxx" \
+  -H "Authorization: Bearer ar_xxxxx" \
   -H "Content-Type: application/json" \
   -d '{
     "q": "hello world",
@@ -458,7 +458,7 @@ Currently supported:
 {
   "id": "uuid",
   "name": "string",
-  "key": "string (sk_xxxxx)",
+  "key": "string (ar_xxxxx)",
   "providers": ["string"],
   "createdAt": "ISO 8601 timestamp",
   "isActive": "boolean",

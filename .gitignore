@@ -12,3 +12,5 @@ coverage
 *.swo
 .next
 out
+test-results
+playwright-report

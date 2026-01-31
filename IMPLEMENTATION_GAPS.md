@@ -4,7 +4,7 @@
 
 ### 1. API Key Format 
 **Product Definition:** `ar_` + 32 chars  
-**Current Implementation:** `sk_` + 32 chars  
+**Current Implementation:** `ar_` + 32 chars  
 **Status:** ❌ WRONG  
 **Files to Fix:**
 - backend/src/services/KeyService.ts (line 107)
@@ -85,30 +85,30 @@
 
 ## 🔧 Detailed Fix Plan
 
-### Fix 1: Change Key Prefix (sk_ → ar_)
+### Fix 1: Change Key Prefix (ar_ → ar_)
 
 **File:** `backend/src/services/KeyService.ts`
 ```typescript
 // Line 107 - CHANGE FROM:
-return `sk_${uuid().replace(/-/g, '')}`.substring(0, 32);
+return `ar_${uuid().replace(/-/g, '')}`.substring(0, 32);
 
 // TO:
 return `ar_${uuid().replace(/-/g, '')}`.substring(0, 32);
 ```
 
 **Also Update:**
-1. Tests - KeyService.test.ts (expects sk_ format)
+1. Tests - KeyService.test.ts (expects ar_ format)
 2. Tests - KeyController.test.ts  
 3. Tests - BraveSearchController.test.ts
 4. Tests - auth.test.ts (Bearer token format)
-5. API.md - Examples with sk_ → ar_
-6. QUICKSTART.md - Examples with sk_ → ar_
-7. Frontend - Any hardcoded sk_ references
+5. API.md - Examples with ar_ → ar_
+6. QUICKSTART.md - Examples with ar_ → ar_
+7. Frontend - Any hardcoded ar_ references
 
 **Test Fix Pattern:**
 ```typescript
 // Before:
-expect(result.key).toMatch(/^sk_/);
+expect(result.key).toMatch(/^ar_/);
 
 // After:
 expect(result.key).toMatch(/^ar_/);
@@ -224,7 +224,7 @@ npm run backend:test __tests__/middleware/auth.test.ts
 npm run frontend:test
 ```
 
-**Expected Test Failures:** ~20 tests that explicitly check for `sk_` prefix
+**Expected Test Failures:** ~20 tests that explicitly check for `ar_` prefix
 
 ---
 
@@ -232,7 +232,7 @@ npm run frontend:test
 
 After code fixes:
 
-1. **API.md** - Update all `sk_` examples to `ar_`
+1. **API.md** - Update all `ar_` examples to `ar_`
 2. **QUICKSTART.md** - Update all curl examples
 3. **README.md** - Update any examples with old prefix
 4. **Comments** - Update JSDoc comments mentioning format
