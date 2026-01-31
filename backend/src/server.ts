@@ -1,6 +1,7 @@
 import express, { Express } from 'express';
 import dotenv from 'dotenv';
 import { KeyController } from './controllers/KeyController';
+import { ProviderController } from './controllers/ProviderController';
 
 dotenv.config();
 
@@ -20,6 +21,21 @@ app.post('/api/keys', (req, res) => KeyController.createKey(req, res));
 app.get('/api/keys', (req, res) => KeyController.listKeys(req, res));
 app.get('/api/keys/:id', (req, res) => KeyController.getKey(req, res));
 app.delete('/api/keys/:id', (req, res) => KeyController.deleteKey(req, res));
+
+// Provider configuration routes
+app.get('/api/config/providers', (req, res) => ProviderController.listProviders(req, res));
+app.post('/api/config/providers/:name', (req, res) =>
+  ProviderController.updateProvider(req, res)
+);
+app.get('/api/config/providers/:name', (req, res) =>
+  ProviderController.getProvider(req, res)
+);
+app.post('/api/config/providers/:name/check', async (req, res) =>
+  ProviderController.checkProvider(req, res)
+);
+app.delete('/api/config/providers/:name', (req, res) =>
+  ProviderController.deleteProvider(req, res)
+);
 
 // Error handling
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
