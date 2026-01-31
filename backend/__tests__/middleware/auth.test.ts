@@ -13,7 +13,7 @@ beforeEach(() => {
 describe('Authentication Middleware', () => {
   describe('verifyApiKey', () => {
     beforeEach(() => {
-      app.get('/protected', verifyApiKey, (req, res) => {
+      app.get('/protected', verifyApiKey, (_req, res) => {
         res.json({ message: 'authorized' });
       });
     });
@@ -82,7 +82,7 @@ describe('Authentication Middleware', () => {
       // Setup route with provider requirement
       app.get(
         '/brave-required',
-        (req, res, next) => {
+        (req, _res, next) => {
           // Mock setting keyProviders (in real app, this comes from verifyApiKey)
           req.keyProviders = req.query.providers
             ? (req.query.providers as string).split(',')
@@ -90,7 +90,7 @@ describe('Authentication Middleware', () => {
           next();
         },
         requireProvider('brave'),
-        (req, res) => {
+        (_req, res) => {
           res.json({ message: 'brave authorized' });
         }
       );
@@ -133,7 +133,7 @@ describe('Authentication Middleware', () => {
 
   describe('Authorization Header Parsing', () => {
     it('should handle case-insensitive Bearer scheme', async () => {
-      app.get('/test', verifyApiKey, (req, res) => {
+      app.get('/test', verifyApiKey, (_req, res) => {
         res.json({ ok: true });
       });
 
@@ -148,7 +148,7 @@ describe('Authentication Middleware', () => {
     });
 
     it('should handle whitespace in authorization header', async () => {
-      app.get('/test', verifyApiKey, (req, res) => {
+      app.get('/test', verifyApiKey, (_req, res) => {
         res.json({ ok: true });
       });
 

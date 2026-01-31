@@ -34,7 +34,7 @@ export class KeyController {
   /**
    * GET /api/keys - List all active keys
    */
-  static listKeys(req: Request, res: Response): void {
+  static listKeys(_req: Request, res: Response): void {
     try {
       const keys = KeyService.listKeys();
 

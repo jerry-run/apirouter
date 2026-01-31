@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import KeyService from '../services/KeyService';
 
 // Extend Express Request to include auth context
 declare global {
@@ -35,19 +34,14 @@ export function verifyApiKey(req: Request, res: Response, next: NextFunction): v
     return;
   }
 
-  // Find key and verify
-  const keyData = Array.from(Object.values({})); // Placeholder - actual implementation
-  // For now, we'll use a simple lookup approach
-  const foundKey = Array.from({ length: 0 }); // Will be refactored
-
-  // NOTE: This is a placeholder. Real implementation needs KeyService to expose lookup by key string
-  // For testing, we'll validate the format
+  // Verify key format (sk_xxxxx)
   if (!key.startsWith('sk_')) {
     res.status(401).json({ error: 'Invalid API key format' });
     return;
   }
 
-  // TODO: Connect to actual key lookup in KeyService
+  // TODO: In production, verify key against database and set req.keyId and req.keyProviders
+  // For MVP, just validate format
   next();
 }
 
