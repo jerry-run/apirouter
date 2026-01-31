@@ -249,13 +249,13 @@ describe('KeyService', () => {
   });
 
   describe('key format', () => {
-    it('should generate keys with sk_ prefix', () => {
+    it('should generate keys with ar_ prefix', () => {
       const created = KeyService.createKey({
         name: 'test-key',
         providers: ['brave'],
       });
 
-      expect(created.key).toMatch(/^sk_/);
+      expect(created.key).toMatch(/^ar_/);
     });
 
     it('should generate consistent key length', () => {

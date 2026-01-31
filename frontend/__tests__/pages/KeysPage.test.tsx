@@ -41,9 +41,11 @@ describe('KeysPage', () => {
         {
           id: '1',
           name: 'test-key',
-          key: 'sk_abc123',
+          key: 'ar_abc123',
           providers: ['brave'],
           createdAt: '2026-01-31T00:00:00Z',
+          expiresAt: '2026-05-01T00:00:00Z',
+          lastUsedAt: null,
           isActive: true,
         },
       ];
@@ -103,9 +105,11 @@ describe('KeysPage', () => {
       mockKeysApi.create.mockResolvedValue({
         id: '1',
         name: 'new-key',
-        key: 'sk_xyz',
+        key: 'ar_xyz',
         providers: ['brave'],
         createdAt: '2026-01-31T00:00:00Z',
+        expiresAt: '2026-05-01T00:00:00Z',
+        lastUsedAt: null,
         isActive: true,
       });
 
@@ -125,7 +129,7 @@ describe('KeysPage', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(mockKeysApi.create).toHaveBeenCalledWith('new-key', ['brave']);
+        expect(mockKeysApi.create).toHaveBeenCalledWith('new-key', ['brave'], '90days');
       });
     });
   });
@@ -136,9 +140,11 @@ describe('KeysPage', () => {
         {
           id: '1',
           name: 'test-key',
-          key: 'sk_abc123',
+          key: 'ar_abc123',
           providers: ['brave'],
           createdAt: '2026-01-31T00:00:00Z',
+          expiresAt: '2026-05-01T00:00:00Z',
+          lastUsedAt: null,
           isActive: true,
         },
       ];
@@ -157,9 +163,11 @@ describe('KeysPage', () => {
         {
           id: '1',
           name: 'test-key',
-          key: 'sk_abc123',
+          key: 'ar_abc123',
           providers: ['brave'],
           createdAt: '2026-01-31T00:00:00Z',
+          expiresAt: '2026-05-01T00:00:00Z',
+          lastUsedAt: null,
           isActive: true,
         },
       ];
@@ -178,9 +186,11 @@ describe('KeysPage', () => {
         {
           id: '1',
           name: 'test-key',
-          key: 'sk_abc123',
+          key: 'ar_abc123',
           providers: ['brave'],
           createdAt: '2026-01-31T00:00:00Z',
+          expiresAt: '2026-05-01T00:00:00Z',
+          lastUsedAt: null,
           isActive: true,
         },
       ];
@@ -211,9 +221,11 @@ describe('KeysPage', () => {
         {
           id: '1',
           name: 'multi-provider',
-          key: 'sk_abc123',
+          key: 'ar_abc123',
           providers: ['brave', 'openai'],
           createdAt: '2026-01-31T00:00:00Z',
+          expiresAt: '2026-05-01T00:00:00Z',
+          lastUsedAt: null,
           isActive: true,
         },
       ];
