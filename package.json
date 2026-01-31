@@ -14,6 +14,9 @@
     "frontend:build": "cd frontend && npm run build",
     "dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\"",
     "test": "npm run backend:test && npm run frontend:test",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "e2e:debug": "playwright test --debug",
     "build": "npm run backend:build && npm run frontend:build",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
@@ -24,6 +27,7 @@
     "frontend"
   ],
   "devDependencies": {
+    "@playwright/test": "^1.58.1",
     "concurrently": "^9.0.0"
   }
 }
