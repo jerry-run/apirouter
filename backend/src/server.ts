@@ -1,5 +1,6 @@
 import express, { Express } from 'express';
 import dotenv from 'dotenv';
+import { KeyController } from './controllers/KeyController';
 
 dotenv.config();
 
@@ -9,10 +10,16 @@ const port = process.env.PORT || 3001;
 // Middleware
 app.use(express.json());
 
-// Routes (to be implemented)
+// Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Key management routes
+app.post('/api/keys', (req, res) => KeyController.createKey(req, res));
+app.get('/api/keys', (req, res) => KeyController.listKeys(req, res));
+app.get('/api/keys/:id', (req, res) => KeyController.getKey(req, res));
+app.delete('/api/keys/:id', (req, res) => KeyController.deleteKey(req, res));
 
 // Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -20,8 +27,11 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   res.status(500).json({ error: 'Internal Server Error' });
 });
 
-app.listen(port, () => {
-  console.log(`[server]: Server is running at http://localhost:${port}`);
-});
+// Only listen if this is the main module (not imported for testing)
+if (import.meta.url === `file://${process.argv[1]}`) {
+  app.listen(port, () => {
+    console.log(`[server]: Server is running at http://localhost:${port}`);
+  });
+}
 
 export default app;
