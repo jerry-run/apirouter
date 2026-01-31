@@ -2,6 +2,7 @@ import express, { Express } from 'express';
 import dotenv from 'dotenv';
 import { KeyController } from './controllers/KeyController';
 import { ProviderController } from './controllers/ProviderController';
+import { BraveSearchController } from './controllers/BraveSearchController';
 
 dotenv.config();
 
@@ -10,6 +11,7 @@ const port = process.env.PORT || 3001;
 
 // Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Health check
 app.get('/api/health', (_req, res) => {
@@ -35,6 +37,14 @@ app.post('/api/config/providers/:name/check', async (req, res) =>
 );
 app.delete('/api/config/providers/:name', (req, res) =>
   ProviderController.deleteProvider(req, res)
+);
+
+// Brave Search proxy routes
+app.post('/api/proxy/brave/search', async (req, res) =>
+  BraveSearchController.search(req, res)
+);
+app.get('/api/proxy/brave/search', async (req, res) =>
+  BraveSearchController.searchGet(req, res)
 );
 
 // Error handling
