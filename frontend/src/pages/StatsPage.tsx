@@ -2,15 +2,6 @@ import { useState, useEffect } from 'react';
 import { keysApi, ApiKey } from '../services/api';
 import '../styles/StatsPage.css';
 
-interface KeyStats {
-  keyId: string;
-  keyName: string;
-  provider: string;
-  requestCount: number;
-  errorCount: number;
-  lastUsedAt: string | null;
-}
-
 export const StatsPage: React.FC = () => {
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
@@ -129,6 +120,7 @@ export const StatsPage: React.FC = () => {
             <tr>
               <th>Key Name</th>
               <th>Providers</th>
+              <th>Expires</th>
               <th>Status</th>
               <th>Created</th>
               <th>Last Used</th>
@@ -153,6 +145,13 @@ export const StatsPage: React.FC = () => {
                         </span>
                       ))}
                     </div>
+                  </td>
+                  <td>
+                    {key.expiresAt ? (
+                      <span className="expires-date">{formatDate(key.expiresAt)}</span>
+                    ) : (
+                      <span className="expires-never">Never</span>
+                    )}
                   </td>
                   <td>
                     <span className={`status-badge ${key.isActive ? 'active' : 'inactive'}`}>

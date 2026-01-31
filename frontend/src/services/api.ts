@@ -10,6 +10,8 @@ export interface ApiKey {
   key: string;
   providers: string[];
   createdAt: string;
+  expiresAt: string | null;
+  lastUsedAt: string | null;
   isActive: boolean;
 }
 
@@ -36,11 +38,15 @@ export interface BraveSearchResponse {
 
 // Keys API
 export const keysApi = {
-  async create(name: string, providers: string[]): Promise<ApiKey> {
+  async create(
+    name: string,
+    providers: string[],
+    expiresIn: 'never' | '90days' | '180days' = '90days'
+  ): Promise<ApiKey> {
     const response = await fetch(`${API_BASE}/keys`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, providers }),
+      body: JSON.stringify({ name, providers, expiresIn }),
     });
     if (!response.ok) throw new Error('Failed to create key');
     return response.json();

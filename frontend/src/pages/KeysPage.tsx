@@ -9,9 +9,15 @@ export const KeysPage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [newKeyName, setNewKeyName] = useState('');
   const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
+  const [expiresIn, setExpiresIn] = useState<'90days' | '180days' | 'never'>('90days');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   const providers = ['brave', 'openai', 'claude'];
+  const expirationOptions: Array<{ value: '90days' | '180days' | 'never'; label: string }> = [
+    { value: '90days', label: '90 days (default)' },
+    { value: '180days', label: '180 days' },
+    { value: 'never', label: 'Never expires' },
+  ];
 
   useEffect(() => {
     loadKeys();
@@ -42,9 +48,10 @@ export const KeysPage: React.FC = () => {
     }
 
     try {
-      await keysApi.create(newKeyName, selectedProviders);
+      await keysApi.create(newKeyName, selectedProviders, expiresIn);
       setNewKeyName('');
       setSelectedProviders([]);
+      setExpiresIn('90days');
       setShowModal(false);
       await loadKeys();
     } catch (err) {
@@ -115,6 +122,7 @@ export const KeysPage: React.FC = () => {
                 <th>Name</th>
                 <th>Key</th>
                 <th>Providers</th>
+                <th>Expires</th>
                 <th>Created</th>
                 <th>Actions</th>
               </tr>
@@ -140,6 +148,13 @@ export const KeysPage: React.FC = () => {
                         </span>
                       ))}
                     </div>
+                  </td>
+                  <td>
+                    {key.expiresAt ? (
+                      <span className="expires-date">{formatDate(key.expiresAt)}</span>
+                    ) : (
+                      <span className="expires-never">Never</span>
+                    )}
                   </td>
                   <td>{formatDate(key.createdAt)}</td>
                   <td>
@@ -205,6 +220,21 @@ export const KeysPage: React.FC = () => {
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="expiresIn">Expiration</label>
+              <select
+                id="expiresIn"
+                value={expiresIn}
+                onChange={(e) => setExpiresIn(e.target.value as '90days' | '180days' | 'never')}
+              >
+                {expirationOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="modal-footer">

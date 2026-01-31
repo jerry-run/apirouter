@@ -18,6 +18,8 @@ export class KeyController {
         key: key.key,
         providers: key.providers,
         createdAt: key.createdAt.toISOString(),
+        expiresAt: key.expiresAt ? key.expiresAt.toISOString() : null,
+        lastUsedAt: key.lastUsedAt ? key.lastUsedAt.toISOString() : null,
         isActive: key.isActive,
       };
 
@@ -44,6 +46,8 @@ export class KeyController {
         key: key.key,
         providers: key.providers,
         createdAt: key.createdAt.toISOString(),
+        expiresAt: key.expiresAt ? key.expiresAt.toISOString() : null,
+        lastUsedAt: key.lastUsedAt ? key.lastUsedAt.toISOString() : null,
         isActive: key.isActive,
       }));
 
@@ -72,6 +76,8 @@ export class KeyController {
         key: key.key,
         providers: key.providers,
         createdAt: key.createdAt.toISOString(),
+        expiresAt: key.expiresAt ? key.expiresAt.toISOString() : null,
+        lastUsedAt: key.lastUsedAt ? key.lastUsedAt.toISOString() : null,
         isActive: key.isActive,
       };
 

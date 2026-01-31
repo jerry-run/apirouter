@@ -149,6 +149,16 @@
   font-weight: 500;
 }
 
+.expires-date {
+  color: #f57c00;
+  font-weight: 500;
+}
+
+.expires-never {
+  color: #2e7d32;
+  font-weight: 500;
+}
+
 .status-badge {
   display: inline-block;
   padding: 0.25rem 0.75rem;

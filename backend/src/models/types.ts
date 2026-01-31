@@ -5,6 +5,7 @@ export interface ApiKey {
   key: string;
   providers: string[];
   createdAt: Date;
+  expiresAt: Date | null; // null = never expires
   lastUsedAt: Date | null;
   isActive: boolean;
 }
@@ -30,6 +31,7 @@ export interface UsageStats {
 export interface CreateKeyRequest {
   name: string;
   providers: string[];
+  expiresIn?: 'never' | '90days' | '180days'; // default: 90days
 }
 
 export interface KeyResponse {
@@ -38,5 +40,7 @@ export interface KeyResponse {
   key: string;
   providers: string[];
   createdAt: string;
+  expiresAt: string | null;
+  lastUsedAt: string | null;
   isActive: boolean;
 }

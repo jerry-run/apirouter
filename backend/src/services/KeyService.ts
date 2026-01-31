@@ -25,12 +25,24 @@ class KeyService {
       throw new Error(`Invalid providers: ${invalidProviders.join(', ')}`);
     }
 
+    // Calculate expiration date based on request (default: 90 days)
+    const expiresIn = request.expiresIn || '90days';
+    let expiresAt: Date | null = null;
+
+    if (expiresIn === '90days') {
+      expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
+    } else if (expiresIn === '180days') {
+      expiresAt = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000);
+    }
+    // if 'never', expiresAt remains null
+
     const key: ApiKey = {
       id: uuid(),
       name: request.name,
       key: this.generateSecureKey(),
       providers: request.providers,
       createdAt: new Date(),
+      expiresAt,
       lastUsedAt: null,
       isActive: true,
     };
@@ -62,13 +74,19 @@ class KeyService {
   }
 
   /**
-   * Verify key is valid and has access to provider
+   * Verify key is valid, not expired, and has access to provider
    */
   verifyKey(key: string, provider: string): boolean {
     const apiKey = Array.from(this.keys.values()).find((k) => k.key === key && k.isActive);
     if (!apiKey) {
       return false;
     }
+
+    // Check if key has expired
+    if (apiKey.expiresAt && new Date() > apiKey.expiresAt) {
+      return false;
+    }
+
     return apiKey.providers.includes(provider);
   }
 
@@ -104,7 +122,7 @@ class KeyService {
 
   // Private helpers
   private generateSecureKey(): string {
-    return `sk_${uuid().replace(/-/g, '')}`.substring(0, 32);
+    return `ar_${uuid().replace(/-/g, '')}`.substring(0, 32);
   }
 
   private isValidProvider(provider: string): boolean {
