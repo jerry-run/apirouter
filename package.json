@@ -1,0 +1,29 @@
+{
+  "name": "apirouter",
+  "version": "0.1.0",
+  "description": "Open-source lightweight API proxy service",
+  "private": true,
+  "scripts": {
+    "backend:dev": "cd backend && npm run dev",
+    "backend:test": "cd backend && npm test",
+    "backend:test:watch": "cd backend && npm run test:watch",
+    "backend:build": "cd backend && npm run build",
+    "frontend:dev": "cd frontend && npm run dev",
+    "frontend:test": "cd frontend && npm test",
+    "frontend:test:watch": "cd frontend && npm run test:watch",
+    "frontend:build": "cd frontend && npm run build",
+    "dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\"",
+    "test": "npm run backend:test && npm run frontend:test",
+    "build": "npm run backend:build && npm run frontend:build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}
