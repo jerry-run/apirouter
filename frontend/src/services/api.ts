@@ -232,3 +232,71 @@ export const healthApi = {
     return response.json();
   },
 };
+
+// Statistics API
+export interface UsageStats {
+  provider: string;
+  requests: number;
+  success: number;
+  errors: number;
+  avgLatency: number;
+  lastUsedAt: string;
+}
+
+export interface StatsResponse {
+  timestamp: string;
+  summary: {
+    totalRequests: number;
+    totalSuccess: number;
+    totalErrors: number;
+    totalKeys: number;
+    totalProviders: number;
+  };
+  byProvider: {
+    [key: string]: {
+      provider: string;
+      totalRequests: number;
+      totalSuccess: number;
+      totalErrors: number;
+      avgLatency: number;
+      keys: Array<{
+        keyName: string;
+        requests: number;
+        success: number;
+        errors: number;
+        avgLatency: number;
+        lastUsedAt: string;
+      }>;
+    };
+  };
+  byKey: {
+    [key: string]: {
+      keyName: string;
+      totalRequests: number;
+      totalSuccess: number;
+      totalErrors: number;
+      avgLatency: number;
+      providers: Array<{
+        provider: string;
+        requests: number;
+        success: number;
+        errors: number;
+        avgLatency: number;
+      }>;
+    };
+  };
+}
+
+export const statsApi = {
+  async getStats(): Promise<StatsResponse> {
+    const response = await fetchWithRetry(`${API_BASE}/stats`);
+    if (!response.ok) throw new Error('Failed to fetch statistics');
+    return response.json();
+  },
+
+  async getKeyStats(keyId: string): Promise<any> {
+    const response = await fetchWithRetry(`${API_BASE}/stats/keys/${keyId}`);
+    if (!response.ok) throw new Error('Failed to fetch key statistics');
+    return response.json();
+  },
+};

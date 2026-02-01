@@ -1,24 +1,25 @@
 import { useState, useEffect } from 'react';
-import { keysApi, ApiKey } from '../services/api';
+import { statsApi, StatsResponse } from '../services/api';
 import '../styles/StatsPage.css';
 
 const StatsPage: React.FC = () => {
-  const [keys, setKeys] = useState<ApiKey[]>([]);
+  const [stats, setStats] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedProvider, setSelectedProvider] = useState<string>('all');
 
-  const providers = ['all', 'brave', 'openai', 'claude'];
-
   useEffect(() => {
     loadStats();
+    // Refresh stats every 10 seconds
+    const interval = setInterval(loadStats, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   const loadStats = async () => {
     try {
       setLoading(true);
-      const data = await keysApi.list();
-      setKeys(data);
+      const data = await statsApi.getStats();
+      setStats(data);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load statistics');
@@ -39,31 +40,20 @@ const StatsPage: React.FC = () => {
     });
   };
 
-  const getTotalRequests = () => {
-    return keys.reduce((total, key) => {
-      if (key.lastUsedAt) {
-        return total + 1; // Simplified: 1 request per key if used
-      }
-      return total;
-    }, 0);
+  const getSuccessRate = (success: number, total: number) => {
+    if (total === 0) return '0%';
+    return `${Math.round((success / total) * 100)}%`;
   };
-
-  const getActiveKeys = () => {
-    return keys.filter((k) => k.isActive && k.lastUsedAt).length;
-  };
-
-  const getInactiveKeys = () => {
-    return keys.filter((k) => k.isActive && !k.lastUsedAt).length;
-  };
-
-  const filteredKeys =
-    selectedProvider === 'all'
-      ? keys
-      : keys.filter((k) => k.providers.includes(selectedProvider));
 
   if (loading) {
     return <div className="loading">Loading statistics...</div>;
   }
+
+  if (!stats) {
+    return <div className="error-message">No statistics available yet</div>;
+  }
+
+  const providers = ['all', ...Object.keys(stats.byProvider)];
 
   return (
     <div className="stats-page">
@@ -77,117 +67,182 @@ const StatsPage: React.FC = () => {
       {/* Summary Cards */}
       <div className="stats-summary">
         <div className="stat-card">
-          <div className="stat-value">{keys.length}</div>
-          <div className="stat-label">Total Keys</div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-value">{getActiveKeys()}</div>
-          <div className="stat-label">Active Keys</div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-value">{getInactiveKeys()}</div>
-          <div className="stat-label">Inactive Keys</div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-value">{getTotalRequests()}</div>
           <div className="stat-label">Total Requests</div>
+          <div className="stat-value">{stats.summary.totalRequests}</div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-label">Successful</div>
+          <div className="stat-value" style={{ color: '#28a745' }}>
+            {stats.summary.totalSuccess}
+          </div>
+          <div className="stat-detail">
+            {getSuccessRate(stats.summary.totalSuccess, stats.summary.totalRequests)}
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-label">Errors</div>
+          <div className="stat-value" style={{ color: stats.summary.totalErrors > 0 ? '#dc3545' : '#6c757d' }}>
+            {stats.summary.totalErrors}
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-label">Active Keys</div>
+          <div className="stat-value">{stats.summary.totalKeys}</div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-label">Providers</div>
+          <div className="stat-value">{stats.summary.totalProviders}</div>
         </div>
       </div>
 
-      {/* Filter */}
+      {/* Provider Filter */}
       <div className="filter-section">
-        <label htmlFor="provider-filter">Filter by Provider:</label>
-        <select
-          id="provider-filter"
-          value={selectedProvider}
-          onChange={(e) => setSelectedProvider(e.target.value)}
-        >
-          {providers.map((p) => (
-            <option key={p} value={p}>
-              {p === 'all' ? 'All Providers' : p.charAt(0).toUpperCase() + p.slice(1)}
-            </option>
+        <label>Filter by Provider:</label>
+        <div className="provider-buttons">
+          {providers.map((provider) => (
+            <button
+              key={provider}
+              className={`provider-btn ${selectedProvider === provider ? 'active' : ''}`}
+              onClick={() => setSelectedProvider(provider)}
+            >
+              {provider.charAt(0).toUpperCase() + provider.slice(1)}
+            </button>
           ))}
-        </select>
+        </div>
       </div>
 
-      {/* Keys Table */}
-      <div className="stats-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Key Name</th>
-              <th>Providers</th>
-              <th>Expires</th>
-              <th>Status</th>
-              <th>Created</th>
-              <th>Last Used</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredKeys.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="empty-cell">
-                  No keys to display
-                </td>
-              </tr>
-            ) : (
-              filteredKeys.map((key) => (
-                <tr key={key.id} className={key.lastUsedAt ? 'active-row' : 'inactive-row'}>
-                  <td className="key-name">{key.name}</td>
-                  <td>
-                    <div className="provider-badges">
-                      {key.providers.map((p) => (
-                        <span key={p} className="badge">
-                          {p}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td>
-                    {key.expiresAt ? (
-                      <span className="expires-date">{formatDate(key.expiresAt)}</span>
-                    ) : (
-                      <span className="expires-never">Never</span>
-                    )}
-                  </td>
-                  <td>
-                    <span className={`status-badge ${key.isActive ? 'active' : 'inactive'}`}>
-                      {key.isActive ? 'Active' : 'Deleted'}
-                    </span>
-                  </td>
-                  <td>{formatDate(key.createdAt)}</td>
-                  <td>
-                    <span className={key.lastUsedAt ? 'used' : 'unused'}>
-                      {formatDate(key.lastUsedAt)}
-                    </span>
-                  </td>
-                </tr>
-              ))
+      {/* Provider Details */}
+      {(selectedProvider === 'all' || selectedProvider === '') &&
+        Object.entries(stats.byProvider).length === 0 && (
+          <div className="empty-state">
+            <p>No provider statistics available yet. Make some API requests to see data here.</p>
+          </div>
+        )}
+
+      {(selectedProvider === 'all' || selectedProvider === '') &&
+        Object.entries(stats.byProvider).map(([providerName, providerStats]) => (
+          <div key={providerName} className="provider-section">
+            <h2>{providerName.toUpperCase()}</h2>
+
+            <div className="provider-stats">
+              <div className="stat-item">
+                <span className="label">Total Requests:</span>
+                <span className="value">{providerStats.totalRequests}</span>
+              </div>
+              <div className="stat-item">
+                <span className="label">Success Rate:</span>
+                <span className="value" style={{ color: '#28a745' }}>
+                  {getSuccessRate(providerStats.totalSuccess, providerStats.totalRequests)}
+                </span>
+              </div>
+              <div className="stat-item">
+                <span className="label">Avg Latency:</span>
+                <span className="value">{providerStats.avgLatency}ms</span>
+              </div>
+            </div>
+
+            {/* Keys for this provider */}
+            {providerStats.keys.length > 0 && (
+              <div className="keys-table">
+                <h3>Keys using {providerName}</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Key Name</th>
+                      <th>Requests</th>
+                      <th>Success</th>
+                      <th>Errors</th>
+                      <th>Avg Latency</th>
+                      <th>Last Used</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {providerStats.keys.map((key) => (
+                      <tr key={key.keyName}>
+                        <td>{key.keyName}</td>
+                        <td>{key.requests}</td>
+                        <td style={{ color: '#28a745' }}>{key.success}</td>
+                        <td style={{ color: key.errors > 0 ? '#dc3545' : '#6c757d' }}>
+                          {key.errors}
+                        </td>
+                        <td>{key.avgLatency}ms</td>
+                        <td>{formatDate(key.lastUsedAt)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
-          </tbody>
-        </table>
-      </div>
+          </div>
+        ))}
 
-      {/* Info Section */}
-      <div className="info-section">
-        <h3>About Statistics</h3>
-        <ul>
-          <li>
-            <strong>Total Keys:</strong> Number of API keys created in your account
-          </li>
-          <li>
-            <strong>Active Keys:</strong> Keys that have been used at least once
-          </li>
-          <li>
-            <strong>Inactive Keys:</strong> Keys that have never been used
-          </li>
-          <li>
-            <strong>Total Requests:</strong> Approximate count of API requests made
-          </li>
-        </ul>
+      {selectedProvider !== 'all' &&
+        selectedProvider !== '' &&
+        stats.byProvider[selectedProvider] && (
+          <div className="provider-section">
+            <h2>{selectedProvider.toUpperCase()}</h2>
+
+            <div className="provider-stats">
+              <div className="stat-item">
+                <span className="label">Total Requests:</span>
+                <span className="value">{stats.byProvider[selectedProvider].totalRequests}</span>
+              </div>
+              <div className="stat-item">
+                <span className="label">Success Rate:</span>
+                <span className="value" style={{ color: '#28a745' }}>
+                  {getSuccessRate(
+                    stats.byProvider[selectedProvider].totalSuccess,
+                    stats.byProvider[selectedProvider].totalRequests
+                  )}
+                </span>
+              </div>
+              <div className="stat-item">
+                <span className="label">Avg Latency:</span>
+                <span className="value">{stats.byProvider[selectedProvider].avgLatency}ms</span>
+              </div>
+            </div>
+
+            {stats.byProvider[selectedProvider].keys.length > 0 && (
+              <div className="keys-table">
+                <h3>Keys using {selectedProvider}</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Key Name</th>
+                      <th>Requests</th>
+                      <th>Success</th>
+                      <th>Errors</th>
+                      <th>Avg Latency</th>
+                      <th>Last Used</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stats.byProvider[selectedProvider].keys.map((key) => (
+                      <tr key={key.keyName}>
+                        <td>{key.keyName}</td>
+                        <td>{key.requests}</td>
+                        <td style={{ color: '#28a745' }}>{key.success}</td>
+                        <td style={{ color: key.errors > 0 ? '#dc3545' : '#6c757d' }}>
+                          {key.errors}
+                        </td>
+                        <td>{key.avgLatency}ms</td>
+                        <td>{formatDate(key.lastUsedAt)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+      {/* Refresh indicator */}
+      <div className="refresh-indicator">
+        <small>Auto-refreshes every 10 seconds • Last updated: {formatDate(stats.timestamp)}</small>
       </div>
     </div>
   );

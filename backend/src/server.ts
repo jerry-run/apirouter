@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import { KeyController } from './controllers/KeyController';
 import { ProviderController } from './controllers/ProviderController';
 import { BraveSearchController } from './controllers/BraveSearchController';
+import { StatsController } from './controllers/StatsController';
 
 dotenv.config();
 
@@ -45,6 +46,14 @@ app.post('/api/proxy/brave/search', async (req, res) =>
 );
 app.get('/api/proxy/brave/search', async (req, res) =>
   BraveSearchController.searchGet(req, res)
+);
+
+// Statistics routes
+app.get('/api/stats', async (req, res) =>
+  StatsController.getStats(req, res)
+);
+app.get('/api/stats/keys/:keyId', async (req, res) =>
+  StatsController.getKeyStats(req, res)
 );
 
 // Error handling

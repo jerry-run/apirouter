@@ -234,6 +234,141 @@
   color: #666;
 }
 
+.empty-state {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  text-align: center;
+  color: #999;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.provider-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.provider-btn {
+  padding: 0.5rem 1.25rem;
+  border: 2px solid #e0e0e0;
+  background: white;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  color: #666;
+}
+
+.provider-btn:hover {
+  border-color: #1976d2;
+  color: #1976d2;
+}
+
+.provider-btn.active {
+  background: #1976d2;
+  border-color: #1976d2;
+  color: white;
+}
+
+.provider-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.provider-section h2 {
+  margin: 0 0 1.5rem 0;
+  color: #333;
+  font-size: 1.5rem;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 1rem;
+}
+
+.provider-section h3 {
+  margin: 1.5rem 0 1rem 0;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.provider-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-radius: 6px;
+  border-left: 4px solid #1976d2;
+}
+
+.stat-item .label {
+  font-weight: 500;
+  color: #666;
+}
+
+.stat-item .value {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #1976d2;
+}
+
+.stat-detail {
+  font-size: 0.9rem;
+  color: #999;
+  margin-top: 0.5rem;
+}
+
+.keys-table {
+  margin-top: 2rem;
+}
+
+.keys-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fafafa;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.keys-table thead {
+  background: #f0f0f0;
+}
+
+.keys-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.keys-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e0e0e0;
+  color: #666;
+}
+
+.keys-table tbody tr:hover {
+  background: white;
+}
+
+.refresh-indicator {
+  text-align: center;
+  padding: 1rem;
+  color: #999;
+  font-size: 0.9rem;
+  margin-top: 2rem;
+}
+
 @media (max-width: 600px) {
   .stats-summary {
     grid-template-columns: 1fr 1fr;
