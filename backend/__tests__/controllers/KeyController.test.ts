@@ -30,7 +30,7 @@ beforeEach(async () => {
   // Clean database before each test
   await cleanupDatabase();
   // Delay to ensure cleanup is complete and connections are released
-  await new Promise(r => setTimeout(r, 300));
+  await new Promise(r => setTimeout(r, 1000));
 
   app = express();
   app.use(express.json());
