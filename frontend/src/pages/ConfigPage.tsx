@@ -20,8 +20,7 @@ export const ConfigPage: React.FC = () => {
   const [checkResult, setCheckResult] = useState<{
     [key: string]: { healthy: boolean; checkedAt: string };
   }>({});
-  const [showApiKey, setShowApiKey] = useState<{ [key: string]: boolean }>({});
-  const [editingApiKey, setEditingApiKey] = useState<{ [key: string]: boolean }>({});
+  const [apiKeyMode, setApiKeyMode] = useState<{ [key: string]: 'view' | 'edit' }>({});
 
   const providerList = ['brave', 'openai', 'claude'];
 
@@ -82,9 +81,10 @@ export const ConfigPage: React.FC = () => {
       });
 
       await loadProviders();
-      setEditingApiKey((prev) => ({
+      // Switch API Key back to view mode after successful save
+      setApiKeyMode((prev) => ({
         ...prev,
-        [provider]: false,
+        [provider]: 'view',
       }));
       alert('Provider configuration saved!');
     } catch (err) {
@@ -177,53 +177,55 @@ export const ConfigPage: React.FC = () => {
                 className={`provider-form ${activeTab === provider ? 'active' : ''}`}
               >
                 <div className="form-group">
-                  <label>
-                    API Key
-                    {config?.isConfigured && !editingApiKey[provider] && (
-                      <button
-                        className="btn-icon"
-                        onClick={() => setEditingApiKey((prev) => ({
-                          ...prev,
-                          [provider]: true,
-                        }))}
-                        title="Edit API key"
-                      >
-                        ✏️
-                      </button>
-                    )}
-                  </label>
-                  <div className="api-key-input-group">
-                    <input
-                      type={
-                        editingApiKey[provider] || showApiKey[provider]
-                          ? 'text'
-                          : 'password'
-                      }
-                      placeholder={`Enter ${provider} API key`}
-                      value={formValue?.apiKey || ''}
-                      onChange={(e) => handleInputChange(provider, 'apiKey', e.target.value)}
-                      onFocus={() => {
-                        if (!editingApiKey[provider]) {
-                          setEditingApiKey((prev) => ({
-                            ...prev,
-                            [provider]: true,
-                          }));
-                        }
-                      }}
-                    />
-                    {formValue?.apiKey && (
+                  <label>API Key</label>
+                  {apiKeyMode[provider] === 'edit' ? (
+                    // Edit Mode
+                    <div className="api-key-input-group">
+                      <input
+                        type="text"
+                        placeholder={`Enter ${provider} API key`}
+                        value={formValue?.apiKey || ''}
+                        onChange={(e) => handleInputChange(provider, 'apiKey', e.target.value)}
+                        autoFocus
+                      />
                       <button
                         className="btn-toggle-visibility"
-                        onClick={() => setShowApiKey((prev) => ({
+                        onClick={() => setApiKeyMode((prev) => ({
                           ...prev,
-                          [provider]: !prev[provider],
+                          [provider]: 'view',
                         }))}
-                        title={showApiKey[provider] ? 'Hide' : 'Show'}
+                        title="Cancel editing"
                       >
-                        {showApiKey[provider] ? '👁️' : '👁️‍🗨️'}
+                        ✕
                       </button>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    // View Mode
+                    config?.isConfigured ? (
+                      <div className="api-key-view-group">
+                        <div className="api-key-masked">••••••••</div>
+                        <button
+                          className="btn-icon"
+                          onClick={() => setApiKeyMode((prev) => ({
+                            ...prev,
+                            [provider]: 'edit',
+                          }))}
+                          title="Edit API key"
+                        >
+                          ✏️
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="api-key-input-group">
+                        <input
+                          type="text"
+                          placeholder={`Enter ${provider} API key`}
+                          value={formValue?.apiKey || ''}
+                          onChange={(e) => handleInputChange(provider, 'apiKey', e.target.value)}
+                        />
+                      </div>
+                    )
+                  )}
                   <small>Your API key is encrypted and never logged</small>
                 </div>
 
