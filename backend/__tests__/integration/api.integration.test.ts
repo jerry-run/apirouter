@@ -68,6 +68,8 @@ beforeEach(async () => {
 
 afterEach(async () => {
   await cleanupDatabase();
+  // Delay to ensure cleanup is complete
+  await new Promise(r => setTimeout(r, 200));
 });
 
 describe('API Integration Tests', () => {

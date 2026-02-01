@@ -45,6 +45,8 @@ beforeEach(async () => {
 afterEach(async () => {
   // Clean database after each test
   await cleanupDatabase();
+  // Delay to ensure cleanup is complete
+  await new Promise(r => setTimeout(r, 200));
 });
 
 describe('KeyController', () => {
