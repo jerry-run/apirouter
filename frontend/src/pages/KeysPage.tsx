@@ -12,6 +12,9 @@ export const KeysPage: React.FC = () => {
   const [expiresIn, setExpiresIn] = useState<'90days' | '180days' | 'never'>('90days');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
+  const isDuplicateName = newKeyName.trim() !== '' && 
+    keys.some((key) => key.name.toLowerCase() === newKeyName.trim().toLowerCase());
+
   const providers = ['brave', 'openai', 'claude'];
   const expirationOptions: Array<{ value: '90days' | '180days' | 'never'; label: string }> = [
     { value: '90days', label: '90 days (default)' },
@@ -37,8 +40,16 @@ export const KeysPage: React.FC = () => {
   };
 
   const handleCreateKey = async () => {
-    if (!newKeyName.trim()) {
+    const trimmedName = newKeyName.trim();
+
+    if (!trimmedName) {
       alert('Please enter a key name');
+      return;
+    }
+
+    // Check for duplicate name
+    if (keys.some((key) => key.name.toLowerCase() === trimmedName.toLowerCase())) {
+      alert(`A key with the name "${trimmedName}" already exists. Please use a different name.`);
       return;
     }
 
@@ -48,7 +59,7 @@ export const KeysPage: React.FC = () => {
     }
 
     try {
-      await keysApi.create(newKeyName, selectedProviders, expiresIn);
+      await keysApi.create(trimmedName, selectedProviders, expiresIn);
       setNewKeyName('');
       setSelectedProviders([]);
       setExpiresIn('90days');
@@ -208,7 +219,13 @@ export const KeysPage: React.FC = () => {
                 placeholder="Key name"
                 value={newKeyName}
                 onChange={(e) => setNewKeyName(e.target.value)}
+                className={isDuplicateName ? 'input-error' : ''}
               />
+              {isDuplicateName && (
+                <small className="error-text">
+                  ⚠️ A key with this name already exists
+                </small>
+              )}
             </div>
 
             <div className="form-group">
@@ -253,6 +270,7 @@ export const KeysPage: React.FC = () => {
               <button
                 className="btn btn-primary"
                 onClick={handleCreateKey}
+                disabled={!newKeyName.trim() || selectedProviders.length === 0 || isDuplicateName}
               >
                 Create
               </button>
