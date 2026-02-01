@@ -1,38 +1,22 @@
 version: '3.8'
 
 services:
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "3001:3001"
+  postgres:
+    image: postgres:16-alpine
+    container_name: apirouter_postgres
     environment:
-      NODE_ENV: development
-      PORT: 3001
-    volumes:
-      - ./backend/src:/app/src
-    depends_on:
-      - redis
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      POSTGRES_USER: apirouter
+      POSTGRES_PASSWORD: dev_password_123
+      POSTGRES_DB: apirouter_dev
     ports:
-      - "3000:3000"
-    environment:
-      VITE_API_URL: http://localhost:3001
+      - "5432:5432"
     volumes:
-      - ./frontend/src:/app/src
-    depends_on:
-      - backend
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U apirouter"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-
-networks:
-  default:
-    name: apirouter-network
+volumes:
+  postgres_data:

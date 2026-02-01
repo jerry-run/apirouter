@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// API Keys
+model ApiKey {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  key         String   @unique // ar_xxxxx
+  providers   String[] @default([]) // ["brave", "openai"]
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime?
+  lastUsedAt  DateTime?
+  isActive    Boolean  @default(true)
+
+  // Relations
+  usageStats  UsageStats[]
+  apiLogs     ApiLog[]
+
+  @@index([key])
+  @@index([isActive])
+  @@index([expiresAt])
+}
+
+// Provider Configurations
+model ProviderConfig {
+  id          String   @id @default(cuid())
+  name        String   @unique // "brave", "openai", "claude"
+  apiKey      String?
+  baseUrl     String?
+  rateLimit   Int      @default(100) // requests/min
+  timeout     Int      @default(30000) // ms
+  isConfigured Boolean @default(false)
+  lastChecked DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  usageStats  UsageStats[]
+  apiLogs     ApiLog[]
+
+  @@index([name])
+  @@index([isConfigured])
+}
+
+// Usage Statistics
+model UsageStats {
+  id          String   @id @default(cuid())
+  apiKeyId    String
+  providerId  String
+  requestCount Int    @default(0)
+  successCount Int    @default(0)
+  errorCount  Int     @default(0)
+  totalLatency Int    @default(0) // ms
+  lastUsedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  apiKey      ApiKey  @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  provider    ProviderConfig @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([apiKeyId, providerId])
+  @@index([apiKeyId])
+  @@index([providerId])
+  @@index([lastUsedAt])
+}
+
+// API Logs (for auditing)
+model ApiLog {
+  id          String   @id @default(cuid())
+  apiKeyId    String
+  providerId  String
+  endpoint    String
+  method      String   @default("GET") // GET, POST, etc.
+  statusCode  Int?
+  latency     Int      // ms
+  errorMessage String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  apiKey      ApiKey  @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  provider    ProviderConfig @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([apiKeyId])
+  @@index([providerId])
+  @@index([createdAt])
+  @@index([statusCode])
+}
