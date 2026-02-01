@@ -44,7 +44,8 @@ async function cleanupDatabase() {
 
 beforeEach(async () => {
   await cleanupDatabase();
-  await new Promise(r => setTimeout(r, 50));
+  // Delay to ensure cleanup is complete and connections are released
+  await new Promise(r => setTimeout(r, 300));
 
   app = express();
   app.use(express.json());
