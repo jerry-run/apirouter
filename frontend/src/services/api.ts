@@ -4,6 +4,38 @@
 
 const API_BASE = '/api';
 
+// Retry logic for failed requests
+async function fetchWithRetry(
+  url: string,
+  options?: RequestInit,
+  maxRetries: number = 3,
+  timeout: number = 10000
+): Promise<Response> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+      return response;
+    } catch (err) {
+      if (i === maxRetries - 1) {
+        throw new Error(
+          `Backend is not responding. Please check if the server is running. (${err instanceof Error ? err.message : 'Network error'})`
+        );
+      }
+      // Wait before retrying
+      await new Promise((resolve) => setTimeout(resolve, 500 * (i + 1)));
+    }
+  }
+  throw new Error('Backend is not responding. Please check if the server is running.');
+}
+
 export interface ApiKey {
   id: string;
   name: string;
@@ -43,7 +75,7 @@ export const keysApi = {
     providers: string[],
     expiresIn: 'never' | '90days' | '180days' = '90days'
   ): Promise<ApiKey> {
-    const response = await fetch(`${API_BASE}/keys`, {
+    const response = await fetchWithRetry(`${API_BASE}/keys`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, providers, expiresIn }),
@@ -53,19 +85,19 @@ export const keysApi = {
   },
 
   async list(): Promise<ApiKey[]> {
-    const response = await fetch(`${API_BASE}/keys`);
+    const response = await fetchWithRetry(`${API_BASE}/keys`);
     if (!response.ok) throw new Error('Failed to fetch keys');
     return response.json();
   },
 
   async get(id: string): Promise<ApiKey> {
-    const response = await fetch(`${API_BASE}/keys/${id}`);
+    const response = await fetchWithRetry(`${API_BASE}/keys/${id}`);
     if (!response.ok) throw new Error('Failed to fetch key');
     return response.json();
   },
 
   async delete(id: string): Promise<void> {
-    const response = await fetch(`${API_BASE}/keys/${id}`, {
+    const response = await fetchWithRetry(`${API_BASE}/keys/${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) throw new Error('Failed to delete key');
@@ -75,13 +107,13 @@ export const keysApi = {
 // Providers API
 export const providersApi = {
   async list(): Promise<ProviderConfig[]> {
-    const response = await fetch(`${API_BASE}/config/providers`);
+    const response = await fetchWithRetry(`${API_BASE}/config/providers`);
     if (!response.ok) throw new Error('Failed to fetch providers');
     return response.json();
   },
 
   async get(name: string): Promise<ProviderConfig> {
-    const response = await fetch(`${API_BASE}/config/providers/${name}`);
+    const response = await fetchWithRetry(`${API_BASE}/config/providers/${name}`);
     if (!response.ok) throw new Error('Failed to fetch provider');
     return response.json();
   },
@@ -90,7 +122,7 @@ export const providersApi = {
     name: string,
     data: { apiKey?: string; baseUrl?: string; rateLimit?: number; timeout?: number }
   ): Promise<ProviderConfig> {
-    const response = await fetch(`${API_BASE}/config/providers/${name}`, {
+    const response = await fetchWithRetry(`${API_BASE}/config/providers/${name}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -100,7 +132,7 @@ export const providersApi = {
   },
 
   async check(name: string): Promise<{ name: string; healthy: boolean; checkedAt: string }> {
-    const response = await fetch(`${API_BASE}/config/providers/${name}/check`, {
+    const response = await fetchWithRetry(`${API_BASE}/config/providers/${name}/check`, {
       method: 'POST',
     });
     if (!response.ok) throw new Error('Failed to check provider');
@@ -108,7 +140,7 @@ export const providersApi = {
   },
 
   async delete(name: string): Promise<void> {
-    const response = await fetch(`${API_BASE}/config/providers/${name}`, {
+    const response = await fetchWithRetry(`${API_BASE}/config/providers/${name}`, {
       method: 'DELETE',
     });
     if (!response.ok) throw new Error('Failed to delete provider');
@@ -121,7 +153,7 @@ export const searchApi = {
     query: string,
     options?: { count?: number; offset?: number; safesearch?: string }
   ): Promise<BraveSearchResponse> {
-    const response = await fetch(`${API_BASE}/proxy/brave/search`, {
+    const response = await fetchWithRetry(`${API_BASE}/proxy/brave/search`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ q: query, ...options }),
@@ -134,7 +166,7 @@ export const searchApi = {
 // Health check
 export const healthApi = {
   async check(): Promise<{ status: string; timestamp: string }> {
-    const response = await fetch(`${API_BASE}/health`);
+    const response = await fetchWithRetry(`${API_BASE}/health`);
     if (!response.ok) throw new Error('Health check failed');
     return response.json();
   },
