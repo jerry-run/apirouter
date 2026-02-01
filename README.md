@@ -1,7 +1,8 @@
 # APIRouter
 
-[![Tests](https://img.shields.io/badge/tests-146-brightgreen)](./README.md)
-[![Coverage](https://img.shields.io/badge/coverage-83%25-brightgreen)](./README.md)
+[![Tests](https://img.shields.io/badge/tests-164-brightgreen)](./README.md)
+[![Coverage](https://img.shields.io/badge/coverage-83%25%2F76%25-brightgreen)](./README.md)
+[![Version](https://img.shields.io/badge/version-0.2.0-blue)](./CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-blue)](./LICENSE)
 [![Node](https://img.shields.io/badge/node-20%2B-green)](./README.md)
 
@@ -14,7 +15,7 @@ Open-source lightweight API proxy service for managing multiple API integrations
 - 📊 **Usage Statistics** — Track API usage by key and provider with real-time analytics
 - 🔒 **Security First** — Bearer token authentication, permission isolation, soft deletes for audit trail
 - 🚀 **Docker Ready** — Complete Docker Compose setup for instant deployment
-- 📚 **Production Ready** — 146 automated tests (83% coverage), full TypeScript, comprehensive docs
+- 📚 **Production Ready** — 164 automated tests (100% passing), PostgreSQL persistence, full TypeScript, comprehensive docs
 
 ## 🚀 Quick Start
 
