@@ -38,18 +38,22 @@ export const ConfigPage: React.FC = () => {
       const data = await providersApi.list();
       setProviders(data);
 
-      // Initialize form data and show states
+      // Initialize form data and show states for ALL providers
       const initialData: typeof formData = {};
       const initialShowStates: typeof showApiKey = {};
-      data.forEach((provider) => {
-        initialData[provider.name] = {
-          apiKey: provider.apiKey || '',
+      
+      // Always initialize all providers in providerList
+      providerList.forEach((provider) => {
+        const existingProvider = data.find((p) => p.name === provider);
+        initialData[provider] = {
+          apiKey: existingProvider?.apiKey || '',
           baseUrl: '',
           rateLimit: '100',
           timeout: '30000',
         };
-        initialShowStates[provider.name] = true; // Show API key by default during input
+        initialShowStates[provider] = true; // Always show as plaintext by default
       });
+      
       setFormData(initialData);
       setShowApiKey(initialShowStates);
       setError(null);
