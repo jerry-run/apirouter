@@ -116,6 +116,11 @@
   border-color: #e0e0e0;
 }
 
+/* Override padding for input inside wrapper (to make room for button) */
+.api-key-input-wrapper input {
+  padding-right: 2.5rem;
+}
+
 .form-group small {
   display: block;
   margin-top: 0.25rem;
@@ -123,7 +128,53 @@
   font-size: 0.85rem;
 }
 
-/* API Key styles removed - now using simple disabled input */
+.api-key-input-wrapper {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  position: relative;
+}
+
+.api-key-input-wrapper input {
+  flex: 1;
+  padding: 0.75rem;
+  padding-right: 2.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.api-key-input-wrapper input:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+}
+
+.api-key-input-wrapper input:disabled {
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+  border-color: #e0e0e0;
+}
+
+.btn-show-hide {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  font-size: 1.2rem;
+  margin-left: -2.5rem;
+  z-index: 1;
+  color: #666;
+  transition: color 0.2s ease;
+}
+
+.btn-show-hide:hover {
+  color: #1976d2;
+}
 
 .form-row {
   display: grid;

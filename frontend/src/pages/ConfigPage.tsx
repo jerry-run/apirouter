@@ -21,6 +21,7 @@ export const ConfigPage: React.FC = () => {
     [key: string]: { healthy: boolean; checkedAt: string };
   }>({});
   const [editingProvider, setEditingProvider] = useState<string | null>(null);
+  const [showApiKeyInView, setShowApiKeyInView] = useState<{ [key: string]: boolean }>({});
 
   const providerList = ['brave', 'openai', 'claude'];
 
@@ -175,13 +176,35 @@ export const ConfigPage: React.FC = () => {
               >
                 <div className="form-group">
                   <label>API Key</label>
-                  <input
-                    type={editingProvider === provider ? 'text' : 'password'}
-                    placeholder={`Enter ${provider} API key`}
-                    value={formValue?.apiKey || ''}
-                    onChange={(e) => handleInputChange(provider, 'apiKey', e.target.value)}
-                    disabled={editingProvider !== provider}
-                  />
+                  <div className="api-key-input-wrapper">
+                    <input
+                      type={
+                        editingProvider === provider
+                          ? 'text'
+                          : showApiKeyInView[provider]
+                            ? 'text'
+                            : 'password'
+                      }
+                      placeholder={`Enter ${provider} API key`}
+                      value={formValue?.apiKey || ''}
+                      onChange={(e) => handleInputChange(provider, 'apiKey', e.target.value)}
+                      disabled={editingProvider !== provider}
+                    />
+                    {editingProvider !== provider && formValue?.apiKey && (
+                      <button
+                        className="btn-show-hide"
+                        onClick={() =>
+                          setShowApiKeyInView((prev) => ({
+                            ...prev,
+                            [provider]: !prev[provider],
+                          }))
+                        }
+                        title={showApiKeyInView[provider] ? 'Hide' : 'Show'}
+                      >
+                        {showApiKeyInView[provider] ? '👁️' : '👁️‍🗨️'}
+                      </button>
+                    )}
+                  </div>
                   <small>Your API key is encrypted and never logged</small>
                 </div>
 
