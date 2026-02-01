@@ -84,14 +84,23 @@ export const ConfigPage: React.FC = () => {
 
     try {
       setSaving(provider);
-      await providersApi.update(provider, {
+      const updatedConfig = await providersApi.update(provider, {
         apiKey: data.apiKey,
         baseUrl: data.baseUrl || undefined,
         rateLimit: data.rateLimit ? parseInt(data.rateLimit) : undefined,
         timeout: data.timeout ? parseInt(data.timeout) : undefined,
       });
 
-      await loadProviders();
+      // Update local provider state with response (no full reload needed)
+      setProviders((prev) => {
+        const exists = prev.some((p) => p.name === provider);
+        if (exists) {
+          return prev.map((p) => (p.name === provider ? updatedConfig : p));
+        } else {
+          return [...prev, updatedConfig];
+        }
+      });
+
       // Hide API key after successful save
       setShowApiKey((prev) => ({ ...prev, [provider]: false }));
       alert('Provider configuration saved!');
@@ -124,7 +133,27 @@ export const ConfigPage: React.FC = () => {
 
     try {
       await providersApi.delete(provider);
-      await loadProviders();
+      
+      // Update local state - remove provider or mark as unconfigured
+      setProviders((prev) =>
+        prev.map((p) =>
+          p.name === provider
+            ? { ...p, isConfigured: false, apiKey: undefined, lastChecked: null }
+            : p
+        )
+      );
+      
+      // Reset form data for this provider
+      setFormData((prev) => ({
+        ...prev,
+        [provider]: {
+          apiKey: '',
+          baseUrl: '',
+          rateLimit: '100',
+          timeout: '30000',
+        },
+      }));
+      
       alert('Provider configuration deleted!');
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to delete configuration');
