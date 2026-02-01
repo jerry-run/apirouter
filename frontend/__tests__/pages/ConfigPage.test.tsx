@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { ConfigPage } from '../../src/pages/ConfigPage';
 
 vi.mock('../../src/services/api', () => ({
@@ -57,6 +57,46 @@ describe('ConfigPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Network error/i)).toBeInTheDocument();
+    });
+  });
+
+  it('should show API key as plain text by default', async () => {
+    render(<ConfigPage />);
+
+    await waitFor(() => {
+      const apiKeyInputs = screen.getAllByPlaceholderText(/Enter.*API key/i);
+      // API key inputs should be visible as text by default
+      apiKeyInputs.forEach((input) => {
+        expect(input).toHaveAttribute('type', 'text');
+      });
+    });
+  });
+
+  it('should hide API key after successful save', async () => {
+    mockProvidersApi.update.mockResolvedValue({});
+
+    render(<ConfigPage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Brave' })).toBeInTheDocument();
+    });
+
+    // Find the Brave tab and click it to ensure it's active
+    const braveTab = screen.getByRole('button', { name: 'Brave' });
+    fireEvent.click(braveTab);
+
+    // Enter API key
+    const apiKeyInput = screen.getAllByPlaceholderText(/Enter.*API key/i)[0];
+    fireEvent.change(apiKeyInput, { target: { value: 'test-api-key-123' } });
+
+    // Click Save button
+    const saveButton = screen.getAllByRole('button', { name: /Save Configuration/i })[0];
+    fireEvent.click(saveButton);
+
+    // After save, the API key input should be hidden (password type)
+    await waitFor(() => {
+      const updatedApiKeyInput = screen.getAllByPlaceholderText(/Enter.*API key/i)[0];
+      expect(updatedApiKeyInput).toHaveAttribute('type', 'password');
     });
   });
 });

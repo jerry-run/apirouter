@@ -16,6 +16,11 @@ export const ConfigPage: React.FC = () => {
     };
   }>({});
   const [saving, setSaving] = useState<string | null>(null);
+  const [showApiKey, setShowApiKey] = useState<{ [key: string]: boolean }>({
+    brave: true,
+    openai: true,
+    claude: true,
+  });
   const [checking, setChecking] = useState<string | null>(null);
   const [checkResult, setCheckResult] = useState<{
     [key: string]: { healthy: boolean; checkedAt: string };
@@ -33,8 +38,9 @@ export const ConfigPage: React.FC = () => {
       const data = await providersApi.list();
       setProviders(data);
 
-      // Initialize form data
+      // Initialize form data and show states
       const initialData: typeof formData = {};
+      const initialShowStates: typeof showApiKey = {};
       data.forEach((provider) => {
         initialData[provider.name] = {
           apiKey: provider.apiKey || '',
@@ -42,8 +48,10 @@ export const ConfigPage: React.FC = () => {
           rateLimit: '100',
           timeout: '30000',
         };
+        initialShowStates[provider.name] = true; // Show API key by default during input
       });
       setFormData(initialData);
+      setShowApiKey(initialShowStates);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load providers');
@@ -80,6 +88,8 @@ export const ConfigPage: React.FC = () => {
       });
 
       await loadProviders();
+      // Hide API key after successful save
+      setShowApiKey((prev) => ({ ...prev, [provider]: false }));
       alert('Provider configuration saved!');
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to save configuration');
@@ -172,14 +182,23 @@ export const ConfigPage: React.FC = () => {
               >
                 <div className="form-group">
                   <label>API Key</label>
+                <div className="input-with-toggle">
                   <input
-                    type="password"
+                    type={showApiKey[provider] ? 'text' : 'password'}
                     placeholder={`Enter ${provider} API key`}
                     value={formValue?.apiKey || ''}
                     onChange={(e) => handleInputChange(provider, 'apiKey', e.target.value)}
                   />
-                  <small>Your API key is encrypted and never logged</small>
+                  <button
+                    type="button"
+                    className="btn-toggle-visibility"
+                    onClick={() => setShowApiKey(prev => ({ ...prev, [provider]: !prev[provider] }))}
+                    title={showApiKey[provider] ? 'Hide API key' : 'Show API key'}
+                  >
+                    {showApiKey[provider] ? '🙈' : '👁️'}
+                  </button>
                 </div>
+                </div><small>Your API key is encrypted and never logged</small>
 
                 <div className="form-group">
                   <label>Base URL (Optional)</label>

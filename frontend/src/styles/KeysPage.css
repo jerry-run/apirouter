@@ -69,6 +69,12 @@
   text-overflow: ellipsis;
 }
 
+.key-cell code.masked-key {
+  color: #666;
+  letter-spacing: 1px;
+  font-family: 'Courier New', monospace;
+}
+
 .provider-badges {
   display: flex;
   gap: 0.5rem;

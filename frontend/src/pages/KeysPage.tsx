@@ -86,7 +86,12 @@ export const KeysPage: React.FC = () => {
     );
   };
 
-  const formatDate = (dateString: string) => {
+  const maskApiKey = (key: string) => {
+  if (key.length <= 10) return key;
+  return `${key.slice(0, 6)}****${key.slice(-4)}`;
+};
+
+const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -132,7 +137,7 @@ export const KeysPage: React.FC = () => {
                 <tr key={key.id}>
                   <td>{key.name}</td>
                   <td className="key-cell">
-                    <code>{key.key}</code>
+                    <code className="masked-key">{maskApiKey(key.key)}</code>
                     <button
                       className="btn btn-small btn-secondary"
                       onClick={() => handleCopyKey(key.key)}
