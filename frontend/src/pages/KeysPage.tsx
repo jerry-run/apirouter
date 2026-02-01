@@ -97,6 +97,12 @@ export const KeysPage: React.FC = () => {
     });
   };
 
+  const maskKey = (key: string) => {
+    // Show first 6 and last 4 characters, mask the rest
+    if (key.length <= 10) return key;
+    return `${key.substring(0, 6)}${'*'.repeat(key.length - 10)}${key.substring(key.length - 4)}`;
+  };
+
   return (
     <div className="keys-page">
       <div className="page-header">
@@ -132,7 +138,7 @@ export const KeysPage: React.FC = () => {
                 <tr key={key.id}>
                   <td>{key.name}</td>
                   <td className="key-cell">
-                    <code>{key.key}</code>
+                    <code title={key.key}>{maskKey(key.key)}</code>
                     <button
                       className="btn btn-small btn-secondary"
                       onClick={() => handleCopyKey(key.key)}
