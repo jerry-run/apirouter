@@ -1,10 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { Navigation } from './components/Navigation';
-import { KeysPage } from './pages/KeysPage';
-import { ConfigPage } from './pages/ConfigPage';
-import { StatsPage } from './pages/StatsPage';
 import { healthApi } from './services/api';
 import './App.css';
+
+// Lazy load pages for better performance
+const KeysPage = lazy(() => import('./pages/KeysPage'));
+const ConfigPage = lazy(() => import('./pages/ConfigPage'));
+const StatsPage = lazy(() => import('./pages/StatsPage'));
+
+// Simple loading fallback
+const PageLoader = () => (
+  <div className="page-loader">
+    <div className="spinner"></div>
+    <p>Loading...</p>
+  </div>
+);
 
 type Page = 'keys' | 'config' | 'stats';
 
@@ -50,7 +60,11 @@ function App() {
         </div>
       )}
 
-      <main className="app-content">{renderPage()}</main>
+      <main className="app-content">
+        <Suspense fallback={<PageLoader />}>
+          {renderPage()}
+        </Suspense>
+      </main>
 
       <footer className="app-footer">
         <p>&copy; 2026 APIRouter. Open source • MIT License</p>

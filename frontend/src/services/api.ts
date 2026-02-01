@@ -4,6 +4,43 @@
 
 const API_BASE = '/api';
 
+// Simple response cache (1 minute TTL)
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
+
+const cache: Map<string, CacheEntry<any>> = new Map();
+const CACHE_TTL = 60 * 1000; // 1 minute
+
+function getCached<T>(key: string): T | null {
+  const entry = cache.get(key);
+  if (!entry) return null;
+  
+  // Check if cache is still valid
+  if (Date.now() - entry.timestamp > CACHE_TTL) {
+    cache.delete(key);
+    return null;
+  }
+  
+  return entry.data;
+}
+
+function setCached<T>(key: string, data: T): void {
+  cache.set(key, { data, timestamp: Date.now() });
+}
+
+function clearCache(pattern?: string): void {
+  if (!pattern) {
+    cache.clear();
+    return;
+  }
+  // Clear entries matching the pattern
+  Array.from(cache.keys()).forEach(key => {
+    if (key.includes(pattern)) cache.delete(key);
+  });
+}
+
 // Retry logic for failed requests
 async function fetchWithRetry(
   url: string,
@@ -81,13 +118,21 @@ export const keysApi = {
       body: JSON.stringify({ name, providers, expiresIn }),
     });
     if (!response.ok) throw new Error('Failed to create key');
-    return response.json();
+    const data = await response.json();
+    clearCache('keys'); // Invalidate cache
+    return data;
   },
 
   async list(): Promise<ApiKey[]> {
+    const cacheKey = 'keys:list';
+    const cached = getCached<ApiKey[]>(cacheKey);
+    if (cached) return cached;
+
     const response = await fetchWithRetry(`${API_BASE}/keys`);
     if (!response.ok) throw new Error('Failed to fetch keys');
-    return response.json();
+    const data = await response.json();
+    setCached(cacheKey, data);
+    return data;
   },
 
   async get(id: string): Promise<ApiKey> {
@@ -101,21 +146,34 @@ export const keysApi = {
       method: 'DELETE',
     });
     if (!response.ok) throw new Error('Failed to delete key');
+    clearCache('keys'); // Invalidate cache
   },
 };
 
 // Providers API
 export const providersApi = {
   async list(): Promise<ProviderConfig[]> {
+    const cacheKey = 'providers:list';
+    const cached = getCached<ProviderConfig[]>(cacheKey);
+    if (cached) return cached;
+
     const response = await fetchWithRetry(`${API_BASE}/config/providers`);
     if (!response.ok) throw new Error('Failed to fetch providers');
-    return response.json();
+    const data = await response.json();
+    setCached(cacheKey, data);
+    return data;
   },
 
   async get(name: string): Promise<ProviderConfig> {
+    const cacheKey = `provider:${name}`;
+    const cached = getCached<ProviderConfig>(cacheKey);
+    if (cached) return cached;
+
     const response = await fetchWithRetry(`${API_BASE}/config/providers/${name}`);
     if (!response.ok) throw new Error('Failed to fetch provider');
-    return response.json();
+    const data = await response.json();
+    setCached(cacheKey, data);
+    return data;
   },
 
   async update(
@@ -128,7 +186,9 @@ export const providersApi = {
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to update provider');
-    return response.json();
+    const result = await response.json();
+    clearCache('providers'); // Invalidate cache
+    return result;
   },
 
   async check(name: string): Promise<{ name: string; healthy: boolean; checkedAt: string }> {
@@ -144,6 +204,7 @@ export const providersApi = {
       method: 'DELETE',
     });
     if (!response.ok) throw new Error('Failed to delete provider');
+    clearCache('providers'); // Invalidate cache
   },
 };
 

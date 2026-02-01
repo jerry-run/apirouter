@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { keysApi, ApiKey } from '../services/api';
 import '../styles/KeysPage.css';
 
-export const KeysPage: React.FC = () => {
+const KeysPage: React.FC = () => {
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,13 +78,13 @@ export const KeysPage: React.FC = () => {
     }
   };
 
-  const handleProviderToggle = (provider: string) => {
+  const handleProviderToggle = useCallback((provider: string) => {
     setSelectedProviders((prev) =>
       prev.includes(provider)
         ? prev.filter((p) => p !== provider)
         : [...prev, provider]
     );
-  };
+  }, []);
 
   const maskApiKey = (key: string) => {
   if (key.length <= 10) return key;
@@ -262,3 +262,6 @@ const formatDate = (dateString: string) => {
     </div>
   );
 };
+
+export { KeysPage };
+export default KeysPage;

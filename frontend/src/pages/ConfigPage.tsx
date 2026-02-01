@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { providersApi, ProviderConfig } from '../services/api';
 import '../styles/ConfigPage.css';
 
-export const ConfigPage: React.FC = () => {
+const ConfigPage: React.FC = () => {
   const [providers, setProviders] = useState<ProviderConfig[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +64,7 @@ export const ConfigPage: React.FC = () => {
     }
   };
 
-  const handleInputChange = (provider: string, field: string, value: string) => {
+  const handleInputChange = useCallback((provider: string, field: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [provider]: {
@@ -72,7 +72,7 @@ export const ConfigPage: React.FC = () => {
         [field]: value,
       },
     }));
-  };
+  }, []);
 
   const handleSave = async (provider: string) => {
     const data = formData[provider];
@@ -318,3 +318,6 @@ export const ConfigPage: React.FC = () => {
     </div>
   );
 };
+
+export { ConfigPage };
+export default ConfigPage;

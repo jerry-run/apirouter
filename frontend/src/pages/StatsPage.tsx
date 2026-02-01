@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { keysApi, ApiKey } from '../services/api';
 import '../styles/StatsPage.css';
 
-export const StatsPage: React.FC = () => {
+const StatsPage: React.FC = () => {
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -192,3 +192,6 @@ export const StatsPage: React.FC = () => {
     </div>
   );
 };
+
+export { StatsPage };
+export default StatsPage;
