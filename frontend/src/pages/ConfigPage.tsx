@@ -20,7 +20,7 @@ export const ConfigPage: React.FC = () => {
   const [checkResult, setCheckResult] = useState<{
     [key: string]: { healthy: boolean; checkedAt: string };
   }>({});
-  const [apiKeyMode, setApiKeyMode] = useState<{ [key: string]: 'view' | 'edit' }>({});
+  const [editingProvider, setEditingProvider] = useState<string | null>(null);
 
   const providerList = ['brave', 'openai', 'claude'];
 
@@ -81,11 +81,8 @@ export const ConfigPage: React.FC = () => {
       });
 
       await loadProviders();
-      // Switch API Key back to view mode after successful save
-      setApiKeyMode((prev) => ({
-        ...prev,
-        [provider]: 'view',
-      }));
+      // Exit editing mode after successful save
+      setEditingProvider(null);
       alert('Provider configuration saved!');
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to save configuration');
@@ -178,54 +175,13 @@ export const ConfigPage: React.FC = () => {
               >
                 <div className="form-group">
                   <label>API Key</label>
-                  {apiKeyMode[provider] === 'edit' ? (
-                    // Edit Mode
-                    <div className="api-key-input-group">
-                      <input
-                        type="text"
-                        placeholder={`Enter ${provider} API key`}
-                        value={formValue?.apiKey || ''}
-                        onChange={(e) => handleInputChange(provider, 'apiKey', e.target.value)}
-                        autoFocus
-                      />
-                      <button
-                        className="btn-toggle-visibility"
-                        onClick={() => setApiKeyMode((prev) => ({
-                          ...prev,
-                          [provider]: 'view',
-                        }))}
-                        title="Cancel editing"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ) : (
-                    // View Mode
-                    config?.isConfigured ? (
-                      <div className="api-key-view-group">
-                        <div className="api-key-masked">••••••••</div>
-                        <button
-                          className="btn-icon"
-                          onClick={() => setApiKeyMode((prev) => ({
-                            ...prev,
-                            [provider]: 'edit',
-                          }))}
-                          title="Edit API key"
-                        >
-                          ✏️
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="api-key-input-group">
-                        <input
-                          type="text"
-                          placeholder={`Enter ${provider} API key`}
-                          value={formValue?.apiKey || ''}
-                          onChange={(e) => handleInputChange(provider, 'apiKey', e.target.value)}
-                        />
-                      </div>
-                    )
-                  )}
+                  <input
+                    type={editingProvider === provider ? 'text' : 'password'}
+                    placeholder={`Enter ${provider} API key`}
+                    value={formValue?.apiKey || ''}
+                    onChange={(e) => handleInputChange(provider, 'apiKey', e.target.value)}
+                    disabled={editingProvider !== provider}
+                  />
                   <small>Your API key is encrypted and never logged</small>
                 </div>
 
@@ -236,6 +192,7 @@ export const ConfigPage: React.FC = () => {
                     placeholder="https://api.example.com"
                     value={formValue?.baseUrl || ''}
                     onChange={(e) => handleInputChange(provider, 'baseUrl', e.target.value)}
+                    disabled={editingProvider !== provider}
                   />
                 </div>
 
@@ -246,6 +203,7 @@ export const ConfigPage: React.FC = () => {
                       type="number"
                       value={formValue?.rateLimit || '100'}
                       onChange={(e) => handleInputChange(provider, 'rateLimit', e.target.value)}
+                      disabled={editingProvider !== provider}
                     />
                   </div>
 
@@ -255,6 +213,7 @@ export const ConfigPage: React.FC = () => {
                       type="number"
                       value={formValue?.timeout || '30000'}
                       onChange={(e) => handleInputChange(provider, 'timeout', e.target.value)}
+                      disabled={editingProvider !== provider}
                     />
                   </div>
                 </div>
@@ -279,31 +238,53 @@ export const ConfigPage: React.FC = () => {
                 )}
 
                 <div className="form-actions">
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => handleSave(provider)}
-                    disabled={saving === provider}
-                  >
-                    {saving === provider ? 'Saving...' : 'Save Configuration'}
-                  </button>
+                  {editingProvider === provider ? (
+                    // Editing mode buttons
+                    <>
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => handleSave(provider)}
+                        disabled={saving === provider}
+                      >
+                        {saving === provider ? 'Saving...' : 'Save Configuration'}
+                      </button>
 
-                  {config?.isConfigured && (
-                    <button
-                      className="btn btn-secondary"
-                      onClick={() => handleCheck(provider)}
-                      disabled={checking === provider}
-                    >
-                      {checking === provider ? 'Checking...' : 'Health Check'}
-                    </button>
-                  )}
+                      <button
+                        className="btn btn-secondary"
+                        onClick={() => setEditingProvider(null)}
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    // View mode buttons
+                    <>
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => setEditingProvider(provider)}
+                      >
+                        Edit
+                      </button>
 
-                  {config?.isConfigured && (
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => handleDelete(provider)}
-                    >
-                      Delete
-                    </button>
+                      {config?.isConfigured && (
+                        <button
+                          className="btn btn-secondary"
+                          onClick={() => handleCheck(provider)}
+                          disabled={checking === provider}
+                        >
+                          {checking === provider ? 'Checking...' : 'Health Check'}
+                        </button>
+                      )}
+
+                      {config?.isConfigured && (
+                        <button
+                          className="btn btn-danger"
+                          onClick={() => handleDelete(provider)}
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

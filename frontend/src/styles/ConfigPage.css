@@ -86,9 +86,7 @@
 }
 
 .form-group label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  display: block;
   margin-bottom: 0.5rem;
   color: #333;
   font-weight: 500;
@@ -102,12 +100,20 @@
   font-size: 1rem;
   box-sizing: border-box;
   font-family: inherit;
+  transition: all 0.2s ease;
 }
 
 .form-group input:focus {
   outline: none;
   border-color: #1976d2;
   box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+}
+
+.form-group input:disabled {
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+  border-color: #e0e0e0;
 }
 
 .form-group small {
@@ -117,75 +123,7 @@
   font-size: 0.85rem;
 }
 
-.btn-icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  margin: 0;
-  font-size: 1rem;
-  transition: transform 0.2s ease;
-}
-
-.btn-icon:hover {
-  transform: scale(1.2);
-}
-
-.api-key-input-group {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  position: relative;
-}
-
-.api-key-input-group input {
-  flex: 1;
-  padding: 0.75rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  font-size: 1rem;
-  box-sizing: border-box;
-  font-family: 'Courier New', monospace;
-}
-
-.api-key-input-group input:focus {
-  outline: none;
-  border-color: #1976d2;
-  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
-}
-
-.btn-toggle-visibility {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
-  font-size: 1.2rem;
-  z-index: 1;
-  color: #999;
-  transition: color 0.2s ease;
-}
-
-.btn-toggle-visibility:hover {
-  color: #d32f2f;
-}
-
-.api-key-view-group {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  padding: 0.75rem;
-  background: #f5f5f5;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-}
-
-.api-key-masked {
-  flex: 1;
-  font-family: 'Courier New', monospace;
-  color: #999;
-  letter-spacing: 0.2em;
-  font-size: 1rem;
-}
+/* API Key styles removed - now using simple disabled input */
 
 .form-row {
   display: grid;
