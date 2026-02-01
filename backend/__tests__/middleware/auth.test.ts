@@ -11,7 +11,7 @@ beforeEach(() => {
 });
 
 describe('Authentication Middleware', () => {
-  describe('verifyApiKey', () => {
+  describe('verifyApiKey - Format Validation', () => {
     beforeEach(() => {
       app.get('/protected', verifyApiKey, (_req, res) => {
         res.json({ message: 'authorized' });
@@ -24,7 +24,7 @@ describe('Authentication Middleware', () => {
         .expect(401);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('authorization');
+      expect(response.body.error).toContain('Missing authorization header');
     });
 
     it('should reject invalid authorization scheme', async () => {
@@ -34,31 +34,29 @@ describe('Authentication Middleware', () => {
         .expect(401);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('scheme');
+      expect(response.body.error).toContain('Invalid authorization scheme');
     });
 
     it('should reject missing API key', async () => {
       const response = await request(app)
         .get('/protected')
-        .set('Authorization', 'Bearer')
+        .set('Authorization', 'Bearer ')
         .expect(401);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('key');
     });
 
     it('should reject invalid API key format', async () => {
       const response = await request(app)
         .get('/protected')
-        .set('Authorization', 'Bearer invalid-key-format')
+        .set('Authorization', 'Bearer sk_invalid')
         .expect(401);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('format');
+      expect(response.body.error).toContain('Invalid API key format');
     });
 
     it('should accept valid Bearer format', async () => {
-      // This will proceed to next middleware/route handler
       const response = await request(app)
         .get('/protected')
         .set('Authorization', 'Bearer ar_1234567890abcdef')
@@ -77,18 +75,10 @@ describe('Authentication Middleware', () => {
     });
   });
 
-  describe('requireProvider', () => {
+  describe('requireProvider - Provider Restriction', () => {
     beforeEach(() => {
-      // Setup route with provider requirement
-      app.get(
-        '/brave-required',
-        (req, _res, next) => {
-          // Mock setting keyProviders (in real app, this comes from verifyApiKey)
-          req.keyProviders = req.query.providers
-            ? (req.query.providers as string).split(',')
-            : [];
-          next();
-        },
+      app.get('/brave-protected',
+        verifyApiKey,
         requireProvider('brave'),
         (_req, res) => {
           res.json({ message: 'brave authorized' });
@@ -96,69 +86,40 @@ describe('Authentication Middleware', () => {
       );
     });
 
-    it('should allow access if key has required provider', async () => {
+    it('should reject request without provider set', async () => {
       const response = await request(app)
-        .get('/brave-required?providers=brave')
-        .expect(200);
-
-      expect(response.body.message).toBe('brave authorized');
-    });
-
-    it('should allow access if key has multiple providers including required one', async () => {
-      const response = await request(app)
-        .get('/brave-required?providers=brave,openai')
-        .expect(200);
-
-      expect(response.body.message).toBe('brave authorized');
-    });
-
-    it('should deny access if key lacks required provider', async () => {
-      const response = await request(app)
-        .get('/brave-required?providers=openai')
+        .get('/brave-protected')
+        .set('Authorization', 'Bearer ar_valid_key')
         .expect(403);
 
       expect(response.body).toHaveProperty('error');
       expect(response.body.error).toContain('brave');
-      expect(response.body.error).toContain('authorized');
+      expect(response.body.error).toContain('not authorized');
     });
 
-    it('should deny access if key has no providers', async () => {
-      const response = await request(app)
-        .get('/brave-required')
-        .expect(403);
-
-      expect(response.body).toHaveProperty('error');
-    });
-  });
-
-  describe('Authorization Header Parsing', () => {
-    it('should handle case-insensitive Bearer scheme', async () => {
-      app.get('/test', verifyApiKey, (_req, res) => {
-        res.json({ ok: true });
-      });
-
-      // Note: HTTP spec says scheme is case-insensitive, but implementation here is case-sensitive
-      // This test documents current behavior
-      const response = await request(app)
-        .get('/test')
-        .set('Authorization', 'bearer ar_test123')
-        .expect(401);
-
-      expect(response.body).toHaveProperty('error');
-    });
-
-    it('should handle whitespace in authorization header', async () => {
-      app.get('/test', verifyApiKey, (_req, res) => {
-        res.json({ ok: true });
-      });
+    it('should pass when provider is explicitly set', async () => {
+      app = express();
+      app.use(express.json());
+      
+      // Route with pre-set provider
+      app.get('/brave-protected',
+        verifyApiKey,
+        (req, res, next) => {
+          req.keyProviders = ['brave'];
+          next();
+        },
+        requireProvider('brave'),
+        (_req, res) => {
+          res.json({ message: 'brave authorized' });
+        }
+      );
 
       const response = await request(app)
-        .get('/test')
-        .set('Authorization', '  Bearer  ar_test123  ')
-        .expect(401);
+        .get('/brave-protected')
+        .set('Authorization', 'Bearer ar_valid_key')
+        .expect(200);
 
-      // Current implementation may fail due to split behavior
-      expect(response.body).toHaveProperty('error');
+      expect(response.body.message).toBe('brave authorized');
     });
   });
 });

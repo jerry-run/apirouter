@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import { KeyController } from './controllers/KeyController';
 import { ProviderController } from './controllers/ProviderController';
 import { BraveSearchController } from './controllers/BraveSearchController';
+import { verifyApiKey, requireProvider } from './middleware/auth';
 
 dotenv.config();
 
@@ -39,12 +40,16 @@ app.delete('/api/config/providers/:name', (req, res) =>
   ProviderController.deleteProvider(req, res)
 );
 
-// Brave Search proxy routes
-app.post('/api/proxy/brave/search', async (req, res) =>
-  BraveSearchController.search(req, res)
+// Brave Search proxy routes (require API key)
+app.post('/api/proxy/brave/search',
+  verifyApiKey,
+  requireProvider('brave'),
+  async (req, res) => BraveSearchController.search(req, res)
 );
-app.get('/api/proxy/brave/search', async (req, res) =>
-  BraveSearchController.searchGet(req, res)
+app.get('/api/proxy/brave/search',
+  verifyApiKey,
+  requireProvider('brave'),
+  async (req, res) => BraveSearchController.searchGet(req, res)
 );
 
 // Error handling

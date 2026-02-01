@@ -12,7 +12,8 @@ declare global {
 
 /**
  * Verify API key from Authorization header
- * Format: Authorization: Bearer sk_xxxxx
+ * Format: Authorization: Bearer ar_xxxxx
+ * Validates format only in MVP (database verification in v0.3)
  */
 export function verifyApiKey(req: Request, res: Response, next: NextFunction): void {
   const authHeader = req.headers.authorization;
@@ -40,8 +41,8 @@ export function verifyApiKey(req: Request, res: Response, next: NextFunction): v
     return;
   }
 
-  // TODO: In production, verify key against database and set req.keyId and req.keyProviders
-  // For MVP, just validate format
+  // TODO: In v0.3, verify key against database and set req.keyId and req.keyProviders
+  // For now, just validate format
   next();
 }
 
