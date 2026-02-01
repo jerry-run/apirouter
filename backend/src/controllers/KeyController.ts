@@ -1,16 +1,16 @@
 import { Request, Response } from 'express';
-import KeyService from '../services/KeyService';
+import PrismaService from '../services/PrismaService';
 import { CreateKeyRequest, KeyResponse } from '../models/types';
 
 export class KeyController {
   /**
    * POST /api/keys - Create a new API key
    */
-  static createKey(req: Request, res: Response): void {
+  static async createKey(req: Request, res: Response): Promise<void> {
     try {
       const { name, providers } = req.body as CreateKeyRequest;
 
-      const key = KeyService.createKey({ name, providers });
+      const key = await PrismaService.createKey({ name, providers });
 
       const response: KeyResponse = {
         id: key.id,
@@ -36,9 +36,9 @@ export class KeyController {
   /**
    * GET /api/keys - List all active keys
    */
-  static listKeys(_req: Request, res: Response): void {
+  static async listKeys(_req: Request, res: Response): Promise<void> {
     try {
-      const keys = KeyService.listKeys();
+      const keys = await PrismaService.listKeys();
 
       const responses: KeyResponse[] = keys.map((key) => ({
         id: key.id,
@@ -60,10 +60,10 @@ export class KeyController {
   /**
    * GET /api/keys/:id - Get key by ID
    */
-  static getKey(req: Request, res: Response): void {
+  static async getKey(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const key = KeyService.getKey(id);
+      const key = await PrismaService.getKey(id);
 
       if (!key) {
         res.status(404).json({ error: 'Key not found' });
@@ -90,10 +90,10 @@ export class KeyController {
   /**
    * DELETE /api/keys/:id - Delete (deactivate) a key
    */
-  static deleteKey(req: Request, res: Response): void {
+  static async deleteKey(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const deleted = KeyService.deleteKey(id);
+      const deleted = await PrismaService.deleteKey(id);
 
       if (!deleted) {
         res.status(404).json({ error: 'Key not found' });
