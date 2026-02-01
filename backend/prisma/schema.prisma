@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// API Key model - stores authentication keys with provider permissions
+model ApiKey {
+  id        String   @id @default(cuid())
+  name      String
+  key       String   @unique
+  providers String[] // e.g., ["brave", "openai", "claude"]
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  expiresAt DateTime?
+  lastUsedAt DateTime?
+  
+  // Relations
+  usageStats UsageStats[]
+  apiLogs    ApiLog[]
+
+  @@index([isActive])
+  @@index([expiresAt])
+}
+
+// Provider configuration - stores API credentials and settings
+model ProviderConfig {
+  id          String   @id @default(cuid())
+  name        String   @unique // e.g., "brave", "openai", "claude"
+  apiKey      String?
+  baseUrl     String?
+  rateLimit   Int      @default(100)
+  timeout     Int      @default(30000)
+  isConfigured Boolean @default(false)
+  createdAt   DateTime @default(now())
+  lastChecked DateTime?
+  
+  // Relations
+  usageStats UsageStats[]
+  apiLogs    ApiLog[]
+
+  @@index([name])
+  @@index([isConfigured])
+}
+
+// Usage statistics - tracks API calls and performance per key/provider
+model UsageStats {
+  id          String   @id @default(cuid())
+  apiKeyId    String
+  providerId  String
+  requestCount Int    @default(0)
+  successCount Int    @default(0)
+  errorCount   Int    @default(0)
+  totalLatency Int    @default(0) // milliseconds
+  createdAt   DateTime @default(now())
+  lastUsedAt  DateTime @default(now())
+  
+  // Relations
+  apiKey      ApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  provider    ProviderConfig @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([apiKeyId, providerId])
+  @@index([apiKeyId])
+  @@index([providerId])
+  @@index([lastUsedAt])
+}
+
+// API logs - detailed audit trail of all API calls
+model ApiLog {
+  id          String   @id @default(cuid())
+  apiKeyId    String
+  providerId  String
+  endpoint    String
+  method      String
+  statusCode  Int?
+  latency     Int      // milliseconds
+  errorMessage String?
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  apiKey      ApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  provider    ProviderConfig @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([apiKeyId])
+  @@index([providerId])
+  @@index([createdAt])
+  @@index([statusCode])
+}
