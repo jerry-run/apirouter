@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import BraveSearchService, { SearchQuery } from '../services/BraveSearchService';
-import KeyService from '../services/KeyService';
+import PrismaService from '../services/PrismaService';
 
 export class BraveSearchController {
   /**
@@ -8,6 +8,10 @@ export class BraveSearchController {
    * Requires API key in Authorization header
    */
   static async search(req: Request, res: Response): Promise<void> {
+    const startTime = Date.now();
+    let apiKeyId: string | undefined;
+    let providerId: string | undefined;
+
     try {
       const { q, count, offset, safesearch } = req.body;
 
@@ -20,13 +24,20 @@ export class BraveSearchController {
       const authHeader = req.headers.authorization;
       if (authHeader) {
         const [, key] = authHeader.split(' ');
-        if (key && !KeyService.verifyKey(key, 'brave')) {
-          res.status(403).json({ error: 'This key does not have access to brave provider' });
-          return;
+        if (key) {
+          const isValid = await PrismaService.verifyKey(key, 'brave');
+          if (!isValid) {
+            res.status(403).json({ error: 'This key does not have access to brave provider' });
+            return;
+          }
+          // Record usage
+          await PrismaService.recordKeyUsage(key);
+          // Get key ID and provider ID for usage stats
+          const apiKey = await PrismaService.getKeyByString(key);
+          const provider = await PrismaService.getProvider('brave');
+          apiKeyId = apiKey?.id;
+          providerId = provider?.id;
         }
-
-        // Record usage
-        KeyService.recordKeyUsage(key);
       }
 
       const query: SearchQuery = {
@@ -60,12 +71,25 @@ export class BraveSearchController {
       }
 
       const result = await BraveSearchService.search(query);
+      const latency = Date.now() - startTime;
+
+      // Record usage stats if we have IDs
+      if (apiKeyId && providerId) {
+        await PrismaService.recordUsage(apiKeyId, providerId, true, latency);
+      }
 
       res.json({
         ...result,
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
+      const latency = Date.now() - startTime;
+      
+      // Record failed request
+      if (apiKeyId && providerId) {
+        await PrismaService.recordUsage(apiKeyId, providerId, false, latency);
+      }
+
       if (error instanceof Error && error.message.includes('required')) {
         res.status(400).json({ error: error.message });
       } else if (error instanceof Error) {
@@ -80,6 +104,10 @@ export class BraveSearchController {
    * GET /api/proxy/brave/search - Search via GET (query param)
    */
   static async searchGet(req: Request, res: Response): Promise<void> {
+    const startTime = Date.now();
+    let apiKeyId: string | undefined;
+    let providerId: string | undefined;
+
     try {
       const { q, count, offset, safesearch } = req.query;
 
@@ -92,13 +120,20 @@ export class BraveSearchController {
       const authHeader = req.headers.authorization;
       if (authHeader) {
         const [, key] = authHeader.split(' ');
-        if (key && !KeyService.verifyKey(key, 'brave')) {
-          res.status(403).json({ error: 'This key does not have access to brave provider' });
-          return;
+        if (key) {
+          const isValid = await PrismaService.verifyKey(key, 'brave');
+          if (!isValid) {
+            res.status(403).json({ error: 'This key does not have access to brave provider' });
+            return;
+          }
+          // Record usage
+          await PrismaService.recordKeyUsage(key);
+          // Get key ID and provider ID for usage stats
+          const apiKey = await PrismaService.getKeyByString(key);
+          const provider = await PrismaService.getProvider('brave');
+          apiKeyId = apiKey?.id;
+          providerId = provider?.id;
         }
-
-        // Record usage
-        KeyService.recordKeyUsage(key);
       }
 
       const query = {
@@ -109,12 +144,25 @@ export class BraveSearchController {
       };
 
       const result = await BraveSearchService.search(query);
+      const latency = Date.now() - startTime;
+
+      // Record usage stats if we have IDs
+      if (apiKeyId && providerId) {
+        await PrismaService.recordUsage(apiKeyId, providerId, true, latency);
+      }
 
       res.json({
         ...result,
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
+      const latency = Date.now() - startTime;
+      
+      // Record failed request
+      if (apiKeyId && providerId) {
+        await PrismaService.recordUsage(apiKeyId, providerId, false, latency);
+      }
+
       if (error instanceof Error && error.message.includes('required')) {
         res.status(400).json({ error: error.message });
       } else if (error instanceof Error) {

@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
-import ProviderService from '../services/ProviderService';
+import PrismaService from '../services/PrismaService';
 
 export class ProviderController {
   /**
    * GET /api/config/providers - List all providers
    */
-  static listProviders(_req: Request, res: Response): void {
+  static async listProviders(_req: Request, res: Response): Promise<void> {
     try {
-      const providers = ProviderService.listProviders();
+      const providers = await PrismaService.listProviders();
       res.json(providers);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
@@ -17,7 +17,7 @@ export class ProviderController {
   /**
    * POST /api/config/providers/:name - Initialize or update provider
    */
-  static updateProvider(req: Request, res: Response): void {
+  static async updateProvider(req: Request, res: Response): Promise<void> {
     try {
       const { name } = req.params;
       const { apiKey, baseUrl, rateLimit, timeout } = req.body;
@@ -27,35 +27,12 @@ export class ProviderController {
         return;
       }
 
-      // Check if provider exists
-      let provider = ProviderService.getProvider(name);
-
-      if (!provider) {
-        // Initialize new provider
-        try {
-          provider = ProviderService.initializeProvider(name, {
-            apiKey,
-            baseUrl,
-            rateLimit,
-            timeout,
-          });
-        } catch (error) {
-          if (error instanceof Error) {
-            res.status(400).json({ error: error.message });
-          } else {
-            res.status(400).json({ error: 'Failed to initialize provider' });
-          }
-          return;
-        }
-      } else {
-        // Update existing provider
-        provider = ProviderService.updateProvider(name, {
-          apiKey,
-          baseUrl,
-          rateLimit,
-          timeout,
-        });
-      }
+      const provider = await PrismaService.updateProvider(name, {
+        apiKey,
+        baseUrl,
+        rateLimit,
+        timeout,
+      });
 
       res.json(provider);
     } catch (error) {
@@ -70,7 +47,7 @@ export class ProviderController {
   /**
    * GET /api/config/providers/:name - Get provider config
    */
-  static getProvider(req: Request, res: Response): void {
+  static async getProvider(req: Request, res: Response): Promise<void> {
     try {
       const { name } = req.params;
 
@@ -79,7 +56,7 @@ export class ProviderController {
         return;
       }
 
-      const provider = ProviderService.getProvider(name);
+      const provider = await PrismaService.getProvider(name);
 
       if (!provider) {
         res.status(404).json({ error: 'Provider not found' });
@@ -104,7 +81,7 @@ export class ProviderController {
         return;
       }
 
-      const isHealthy = await ProviderService.checkProvider(name);
+      const isHealthy = await PrismaService.checkProvider(name);
 
       res.json({
         name,
@@ -125,7 +102,7 @@ export class ProviderController {
   /**
    * DELETE /api/config/providers/:name - Remove provider config
    */
-  static deleteProvider(req: Request, res: Response): void {
+  static async deleteProvider(req: Request, res: Response): Promise<void> {
     try {
       const { name } = req.params;
 
@@ -134,16 +111,16 @@ export class ProviderController {
         return;
       }
 
-      const deleted = ProviderService.deleteProvider(name);
-
-      if (!deleted) {
-        res.status(404).json({ error: 'Provider not found' });
-        return;
-      }
-
+      await PrismaService.deleteProvider(name);
       res.status(204).send();
     } catch (error) {
-      res.status(500).json({ error: 'Internal server error' });
+      if (error instanceof Error && error.message.includes('not found')) {
+        res.status(404).json({ error: 'Provider not found' });
+      } else if (error instanceof Error) {
+        res.status(500).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Internal server error' });
+      }
     }
   }
 }
